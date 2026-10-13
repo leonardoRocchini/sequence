@@ -47,7 +47,7 @@
 
 **Stage.** The values are the `/sequence-isolate` panel's own options ([CONTROLS.md](../../sequence-isolate/CONTROLS.md)): Frame, Theme, Background, Scale, Speed, Pointer. Pointer is `System`, `Hidden`, `Arrow`, or `Dot`. Only `Arrow` and `Dot` put a pointer in an automated capture, because they're drawn by the stage; the system pointer never appears in one. Never a raw viewport size, because the frame preset defines the capture size. A scene can override any of them (`Speed: 0.25×` above).
 
-**Output.** Directory defaults to `artifacts/captures/<component>/`. Pixel density is the device scale factor for screenshots and frames (default 2×, so files are twice the frame's px).
+**Output.** Directory defaults to `artifacts/captures/<component>/`. Pixel density is the device scale factor for screenshots and frames (default 2×, so files are twice the frame's px). Video gets the same density through a larger viewport and the stage's Scale, not the device scale factor (SKILL.md, "Video size").
 
 **Scene.** One block per capture, in shooting order.
 

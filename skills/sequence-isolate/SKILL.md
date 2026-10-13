@@ -86,8 +86,10 @@ Write the scene data in the stage directory, one object per scene:
 
 Run the check script once instead of driving the browser turn by turn. It needs `playwright-core`, which is never added to the project: install it in the scratchpad (`npm init -y && npm install playwright-core` in `<scratchpad>/stage-check`) and run from there. It uses the Chromium cached in `~/Library/Caches/ms-playwright` (or `CHROMIUM_PATH`). If neither exists, ask before downloading a browser.
 
+The check runs against the project's own dev server, which is the user's to run. Find it by folder, never by port: another project may hold the usual port, and this one may run on any other. List the listeners with `lsof -nP -iTCP -sTCP:LISTEN`, and keep the one whose working directory (`lsof -a -p <pid> -d cwd -Fn`) is the app's directory. Its port goes in the stage URL. If none is running, stop and ask the user to start it (`! npm run dev`, or the project's script), then look again. Never start, restart, or stop a dev server yourself. A second one in the same folder shares its build cache with the user's, and nothing would stop it afterwards: `done` doesn't know about it. The static-site `http.server` (Phase 4) is the only server this skill starts.
+
 ```sh
-cd <scratchpad>/stage-check && node <this skill's dir>/scripts/check.mjs http://localhost:3000/isolate/<component> out
+cd <scratchpad>/stage-check && node <this skill's dir>/scripts/check.mjs http://localhost:<port>/isolate/<component> out
 ```
 
 In one pass it opens every scene in both themes, screenshots the frame, toggles clean mode, sets speed to 0.25×, and moves the drawn pointer. It prints a JSON report and writes `out/contact-sheet.png` with every scene and theme on one image. Read the report and that one image, not the single shots. Open a single shot only to look closer at a problem. Fix what it finds and rerun it. Confirm that:

@@ -22,7 +22,7 @@ The third of three steps: `/sequence-isolate` builds the stage, `/sequence-scrip
 ### Phase 1: Recon
 
 - **Script.** The path from the arguments, otherwise `script.md` in the stage directory (the paths in the `# isolate:<component>:begin` block of `git rev-parse --git-path info/exclude`). No stage: stop, `/sequence-isolate` comes first. No script: suggest `/sequence-script`, or ask for the direction in one message.
-- **Stage.** The URL, the picker's scenes, the panel, the keys ([CONTROLS.md](../sequence-isolate/CONTROLS.md)).
+- **Stage.** The URL, the picker's scenes, the panel, the keys ([CONTROLS.md](../sequence-isolate/CONTROLS.md)). The port comes from the project's running dev server, found by folder as in `/sequence-isolate`'s Phase 5. If none is running, ask the user to start it. Never start one yourself.
 - **Component** (or the stage's snapshot). The locators the script's actions need, and the animation mechanism behind each animated scene.
 - **Tooling.** The browser automation available (a browser MCP, the project's Playwright) and whether it can screenshot an element, set the viewport and pixel density, and record video. Check for `ffmpeg`. Install nothing without asking.
 
@@ -55,6 +55,7 @@ For each scene, in order: switch to its picker scene, apply its reset (`R` remou
 - **Screenshot.** Screenshot the `.stage-frame` element, not the page. With the frame on `Auto`, the viewport is the frame. Use the script's pixel density (default 2×), so a 1280×720 frame gives a 2560×1440 file.
 - **Frames.** The same element screenshot, taken at each offset from the moment the action fires.
 - **Video.** Recorders capture the whole viewport from the start of the session. Make the viewport the frame: set it to the preset's px and switch the frame to `Auto`, which gives the same pixels with no matte. If the viewport can't be set, crop to `.stage-frame`'s bounding box afterwards with `ffmpeg`. Then trim the setup: note when the scene's first action fires and cut everything before it. Without `ffmpeg`, deliver the uncropped or untrimmed file and say which.
+- **Video size.** Pixel density doesn't reach video. Playwright records in CSS px whatever `deviceScaleFactor` is, and pads a smaller recording into the top-left corner of `recordVideo.size`, so a 2× size gives the component in the top-left quarter of a gray video. Always set `recordVideo.size` equal to the viewport and `deviceScaleFactor` to 1, in a new context for each viewport size, because the size is fixed when the context is created. For a video at density *d*, multiply the viewport by *d* and the stage's Scale by *d*: a 1280×720 frame at 2× is a 2560×1440 viewport, frame `Auto`, Scale 2×. That's the same composition, rendered at twice the pixels, not upscaled. If Scale × *d* isn't one of the panel's options, record at 1× and say so. Before handing off, check each video's size with `ffprobe` and look at one frame from it: the component fills the frame and no gray band shows.
 - If the tooling can't produce the form the script asks for, stop on that scene and ask.
 
 ### Phase 4: Hand off
