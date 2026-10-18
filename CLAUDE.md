@@ -10,8 +10,8 @@ Repo di skill per Claude Code che servono a catturare un componente UI in isolam
 
 ## Struttura
 
-- `skills/<nome>/SKILL.md`: la skill. `sequence-isolate` ha anche `STAGE.md`, `PICKER.md`, `CONTROLS.md`, i template da copiare (`templates/`: stage.css, clock.ts per lo speed clock, pointer.ts) e `scripts/check.mjs` per la verifica di Phase 5.
-- `install.sh`: crea un symlink per ogni skill in `~/.claude/skills/`, quindi le modifiche qui sono subito attive. Rilancialo quando aggiungi una skill.
+- `skills/<nome>/SKILL.md`: la skill. `sequence-isolate` ha anche `STAGE.md`, `PICKER.md`, `CONTROLS.md`, i template da copiare (`templates/`: stage.css, clock.ts per lo speed clock, pointer.ts) e `scripts/check.mjs` per la verifica di Phase 5. `sequence-take` ha `scripts/recorder.mjs`, il registratore video (screencast CDP headless a 60 fps, ritaglio e codifica in un passaggio ffmpeg).
+- `install.sh`: crea un symlink per ogni skill in `~/.claude/skills/`, quindi le modifiche qui sono subito attive. Rilancialo quando aggiungi una skill. Se `ffmpeg` non è nel `PATH`, installa `ffmpeg-static` (dipendenza in `package.json`) per `/sequence-take`.
 
 ## Come si testa
 

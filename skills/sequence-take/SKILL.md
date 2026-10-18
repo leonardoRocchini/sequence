@@ -1,6 +1,6 @@
 ---
 name: sequence-take
-description: Run a script.md on an isolated component's stage, driving the real UI with browser tooling and saving the screenshots, frame sequences, and videos it asks for, cropped to the stage frame. Run after /sequence-script.
+description: Run a script.md on an isolated component's stage, driving the real UI with Playwright and saving the screenshots, frame sequences, and videos it asks for, cropped to the stage frame. Run after /sequence-script.
 argument-hint: "[component] [script path]"
 disable-model-invocation: true
 ---
@@ -24,7 +24,7 @@ The third of three steps: `/sequence-isolate` builds the stage, `/sequence-scrip
 - **Script.** The path from the arguments, otherwise `script.md` in the stage directory (the paths in the `# isolate:<component>:begin` block of `git rev-parse --git-path info/exclude`). No stage: stop, `/sequence-isolate` comes first. No script: suggest `/sequence-script`, or ask for the direction in one message.
 - **Stage.** The URL, the picker's scenes, the panel, the keys ([CONTROLS.md](../sequence-isolate/CONTROLS.md)). The port comes from the project's running dev server, found by folder as in `/sequence-isolate`'s Phase 5. If none is running, ask the user to start it. Never start one yourself.
 - **Component** (or the stage's snapshot). The locators the script's actions need, and the animation mechanism behind each animated scene.
-- **Tooling.** The browser automation available (a browser MCP, the project's Playwright) and whether it can screenshot an element, set the viewport and pixel density, and record video. Check for `ffmpeg`. Install nothing without asking.
+- **Tooling.** Playwright runs the script: the project's own if it has one, otherwise `playwright-core` in the scratchpad, as in `/sequence-isolate`'s Phase 5. If the script has a video scene, it's recorded with [scripts/recorder.mjs](scripts/recorder.mjs) (see "Video"), imported by absolute path from this skill's real directory (resolve the `~/.claude/skills` symlink with `realpath`). It needs `ffmpeg`: on the `PATH` first, otherwise `ffmpeg-static` in the sequence repo, at `node_modules/ffmpeg-static/ffmpeg` two levels above that real directory. If neither exists, ask to run the repo's `install.sh`, which installs `ffmpeg-static`. Install nothing without asking.
 
 **Completion criterion:** every scene maps to concrete steps with the tools at hand, or to a named limitation.
 
@@ -52,10 +52,17 @@ For each scene, in order: switch to its picker scene, apply its reset (`R` remou
 
 ### Cropping
 
-- **Screenshot.** Screenshot the `.stage-frame` element, not the page. With the frame on `Auto`, the viewport is the frame. Use the script's pixel density (default 2×), so a 1280×720 frame gives a 2560×1440 file.
+- **Resolution.** Every file has exactly the script's Resolution (script-format.md, "Output"). Its density *d* is resolution ÷ the frame preset's px, and may be fractional: a 1:1 · 800×800 frame at 1080p is *d* = 1.35. The frame preset stays as set; only *d* changes.
+- **Screenshot.** Screenshot the `.stage-frame` element, not the page, with `deviceScaleFactor` = *d* (fractional values work), so a 1:1 · 800×800 frame at 1080p gives a 1080×1080 file. With the frame on `Auto`, the viewport is the frame. If rounding leaves the file a pixel off, resample it to the exact size and say so.
 - **Frames.** The same element screenshot, taken at each offset from the moment the action fires.
-- **Video.** Recorders capture the whole viewport from the start of the session. Make the viewport the frame: set it to the preset's px and switch the frame to `Auto`, which gives the same pixels with no matte. If the viewport can't be set, crop to `.stage-frame`'s bounding box afterwards with `ffmpeg`. Then trim the setup: note when the scene's first action fires and cut everything before it. Without `ffmpeg`, deliver the uncropped or untrimmed file and say which.
-- **Video size.** Pixel density doesn't reach video. Playwright records in CSS px whatever `deviceScaleFactor` is, and pads a smaller recording into the top-left corner of `recordVideo.size`, so a 2× size gives the component in the top-left quarter of a gray video. Always set `recordVideo.size` equal to the viewport and `deviceScaleFactor` to 1, in a new context for each viewport size, because the size is fixed when the context is created. For a video at density *d*, multiply the viewport by *d* and the stage's Scale by *d*: a 1280×720 frame at 2× is a 2560×1440 viewport, frame `Auto`, Scale 2×. That's the same composition, rendered at twice the pixels, not upscaled. If Scale × *d* isn't one of the panel's options, record at 1× and say so. Before handing off, check each video's size with `ffprobe` and look at one frame from it: the component fills the frame and no gray band shows.
+- **Video.** The file holds exactly `.stage-frame`, starts at the scene's first action, and has the script's Resolution, with the component filling the frame and no padding, letterbox, or empty band. Record with `ScreencastRecorder` from [scripts/recorder.mjs](scripts/recorder.mjs), never Playwright's `recordVideo`, which gives 25 fps VP8 in CSS px:
+  1. **Browser.** Launch Chromium **headless** with `args: launchArgs(d)` and give the context `deviceScaleFactor: d` too. The screencast renders at that density, fractional included, at a steady 60 fps. A headed window ignores it and follows the monitor's density and refresh rate. The flag holds for the whole browser, so a scene that overrides Resolution gets its own browser. Screenshots and frames can keep using the same browser.
+  2. **Record.** For each video scene, a new recorder on a new directory in the scratchpad, never in the captures (it refuses a directory that isn't empty). `await recorder.start(await context.newCDPSession(page))` once the scene is reset. It returns after the first frame arrives. Call `const from = recorder.mark()` right before the first action, run the actions and the wait, then `await recorder.stop()`.
+  3. **Encode.** `await recorder.encode({ output, from, crop: await page.locator('.stage-frame').boundingBox(), size, ffmpeg })`, with `size` the Resolution in px and `ffmpeg` the binary found in Recon. It crops, trims to `from`, scales, and encodes to the extension in one pass, at 60 fps (30 for `.gif`). It refuses to upscale or overwrite: on a name clash, pick the `-2` name yourself.
+
+  If it refuses to upscale, *d* was set lower than the Resolution needs: relaunch at the right one. If the stage can't be recorded this way, stop on that scene and ask.
+- **Video format.** The extension picks the encoding, as the table in script-format.md says. `encode()` holds that table, so never pass codec flags. Without `ffmpeg` (the user declined to install it), there's no video: say so and leave the raw frames in the scratchpad.
+- **Video check.** Before handing off, read each video's real pixel size, which must equal the Resolution, and look at one frame from it: the component fills the frame and nothing else shows.
 - If the tooling can't produce the form the script asks for, stop on that scene and ask.
 
 ### Phase 4: Hand off

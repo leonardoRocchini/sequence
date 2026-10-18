@@ -17,7 +17,7 @@
 
 ## Output
 - Directory: artifacts/captures/command-bar
-- Pixel density: 2×
+- Resolution: 1080p · 1920×1080
 
 ## Scene: Default
 - Picker scene: Default
@@ -29,7 +29,7 @@
 - Reset to: replay (R)
 - Action: press ⌘K
 - Wait for: the input is visible and focused
-- Capture: video, command-bar-opening.webm
+- Capture: video, command-bar-opening.mp4
 
 ## Scene: Typing
 - Picker scene: Default
@@ -45,9 +45,32 @@
 
 ## Fields
 
-**Stage.** The values are the `/sequence-isolate` panel's own options ([CONTROLS.md](../../sequence-isolate/CONTROLS.md)): Frame, Theme, Background, Scale, Speed, Pointer. Pointer is `System`, `Hidden`, `Arrow`, or `Dot`. Only `Arrow` and `Dot` put a pointer in an automated capture, because they're drawn by the stage; the system pointer never appears in one. Never a raw viewport size, because the frame preset defines the capture size. A scene can override any of them (`Speed: 0.25×` above).
+**Stage.** The values are the `/sequence-isolate` panel's own options ([CONTROLS.md](../../sequence-isolate/CONTROLS.md)): Frame, Theme, Background, Scale, Speed, Pointer. Pointer is `System`, `Hidden`, `Arrow`, or `Dot`. Only `Arrow` and `Dot` put a pointer in an automated capture, because they're drawn by the stage; the system pointer never appears in one. Never a raw viewport size, because the frame preset defines the composition and Output's Resolution defines the file size. A scene can override any of them (`Speed: 0.25×` above).
 
-**Output.** Directory defaults to `artifacts/captures/<component>/`. Pixel density is the device scale factor for screenshots and frames (default 2×, so files are twice the frame's px). Video gets the same density through a larger viewport and the stage's Scale, not the device scale factor (SKILL.md, "Video size").
+**Output.** Directory defaults to `artifacts/captures/<component>/`.
+
+Resolution is the pixel size of every file, and it's separate from the frame. The frame sets the composition: aspect ratio and the CSS px the component is laid out in. Resolution only sets how many pixels render that composition, so changing it never moves or resizes anything inside the frame. Write it in one of three forms:
+
+| Form | Example | Meaning |
+| --- | --- | --- |
+| Tier | `1080p · 1080×1080` | The frame's short side gets the tier's px, the long side follows the aspect. Tiers: `720p`, `1080p` (Full HD), `1440p` (2K), `2160p` (4K). Always write the resulting px after the tier, so "2K" can't be read as 2048. |
+| Size | `1350×1350` | Explicit px. Must have the frame's aspect ratio. |
+| Density | `2×` | The frame's px times a factor: a 1280×720 frame at 2× is 2560×1440. |
+
+Default `2×`. The density the take renders at is resolution ÷ frame px, and it may be fractional: a 1:1 · 800×800 frame at 1080p is 1.35×. A resolution with a different aspect ratio from the frame is an error, never a crop or a stretch: change the frame or the resolution. A resolution below the frame's px is allowed (720p of an 800×800 frame is 0.9×). With Frame `Auto` there are no preset px: write Resolution as a size, and the take uses it as the viewport at 1×.
+
+A scene can override Resolution, like any Stage value.
+
+Video format is the filename's extension. Each one stands for one encoding, so the script never names a codec:
+
+| Extension | Encoding | For |
+| --- | --- | --- |
+| `.mp4` | H.264, yuv420p, faststart | Social, portfolio, slides: plays everywhere. The default. |
+| `.webm` | VP9 | Web pages and docs that embed `<video>`. |
+| `.gif` | Palette per file, at most 30 fps | READMEs and places that don't play video. Large and lossy in color: offer it only for short loops. |
+| `.mov` | ProRes 422 HQ | Editing in a video editor afterwards. Large files. |
+
+`.mp4` needs even pixel sizes, so its Resolution can't have an odd side.
 
 **Scene.** One block per capture, in shooting order.
 

@@ -17,3 +17,14 @@ for dir in "$src"/*/; do
     ln -s "${dir%/}" "$target"; echo "new  $name"
   fi
 done
+
+# ffmpeg serve a /sequence-take per codificare i video. Si usa quello nel PATH;
+# se manca, si installa ffmpeg-static in node_modules/ di questa repo.
+root="$(dirname "$src")"
+if command -v ffmpeg >/dev/null 2>&1; then
+  echo "ok   ffmpeg ($(command -v ffmpeg))"
+elif [ -x "$root/node_modules/ffmpeg-static/ffmpeg" ]; then
+  echo "ok   ffmpeg (ffmpeg-static)"
+else
+  (cd "$root" && npm install --no-audit --no-fund) && echo "new  ffmpeg (ffmpeg-static)"
+fi

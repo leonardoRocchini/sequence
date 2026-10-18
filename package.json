@@ -1,0 +1,8 @@
+{
+  "name": "sequence",
+  "private": true,
+  "description": "Strumenti delle skill sequence. ffmpeg-static si installa solo se ffmpeg non è nel PATH (install.sh).",
+  "dependencies": {
+    "ffmpeg-static": "5.3.0"
+  }
+}

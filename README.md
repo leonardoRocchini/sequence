@@ -17,3 +17,5 @@ Pipeline: `/sequence-isolate` → `/sequence-script` → `/sequence-take`.
 ```
 
 Crea un symlink per ogni cartella in `skills/` dentro `~/.claude/skills/`, quindi le modifiche nella repo sono subito attive. Rilancialo quando aggiungi una skill.
+
+Controlla anche `ffmpeg`, che `/sequence-take` usa per codificare i video: se non è nel `PATH`, installa `ffmpeg-static` in `node_modules/` della repo (circa 45 MB). Il sistema non viene toccato.

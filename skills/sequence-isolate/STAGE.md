@@ -38,7 +38,7 @@ It covers: the full-viewport `.stage-root` with its `#1f1f1f` matte, the exact-s
 
 ## Pointer
 
-The system pointer is never in a capture. Browser recorders and element screenshots only see what the page paints, and automation (Playwright, a browser MCP) sends synthetic input that never moves the real pointer, so even a screen recording shows it parked. The drawn pointer is part of the page, so every capture form includes it, manual recordings too.
+The system pointer is never in a capture. Browser recorders and element screenshots only see what the page paints, and Playwright sends synthetic input that never moves the real pointer, so even a screen recording shows it parked. The drawn pointer is part of the page, so every capture form includes it, manual recordings too.
 
 It's optional and off by default: the panel's Pointer select (CONTROLS.md) installs it only on `Arrow` or `Dot`. It is stage chrome, like the matte. It reads the component's cursor and never changes the component.
 
