@@ -17,20 +17,32 @@ fs.mkdirSync(OUT, { recursive: true });
 
 function cachedChromium() {
   if (process.env.CHROMIUM_PATH) return process.env.CHROMIUM_PATH;
-  const cache = path.join(os.homedir(), "Library/Caches/ms-playwright");
-  if (!fs.existsSync(cache)) return undefined;
-  const dirs = fs.readdirSync(cache).filter((d) => /^chromium-\d+$/.test(d)).sort().reverse();
-  for (const dir of dirs) {
-    for (const arch of ["chrome-mac-arm64", "chrome-mac"]) {
-      const exe = path.join(cache, dir, arch, "Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing");
-      if (fs.existsSync(exe)) return exe;
+  const caches = [path.join(os.homedir(), "Library/Caches/ms-playwright"), path.join(os.homedir(), ".cache/ms-playwright")];
+  const builds = [
+    "chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "chrome-mac/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing",
+    "chrome-linux64/chrome",
+    "chrome-linux/chrome",
+  ];
+  for (const cache of caches.filter((c) => fs.existsSync(c))) {
+    const dirs = fs.readdirSync(cache).filter((d) => /^chromium-\d+$/.test(d)).sort((a, b) => b.split("-")[1] - a.split("-")[1]);
+    for (const dir of dirs) {
+      for (const build of builds) {
+        const exe = path.join(cache, dir, build);
+        if (fs.existsSync(exe)) return exe;
+      }
     }
   }
   return undefined;
 }
 
 const report = { url, errors: [], scenes: [], console: [], requests: [], cleanMode: {}, speed: {}, pointer: {}, shots: [] };
-const browser = await chromium.launch({ executablePath: cachedChromium() });
+// A browser that can't start is the "No browser" fallback in SKILL.md: one line saying why, then exit.
+const browser = await chromium.launch({ executablePath: cachedChromium() }).catch((error) => {
+  const reason = error.message.split("\n").find((l) => /error while loading|Executable doesn't exist|ENOENT/.test(l)) ?? error.message.split("\n")[0];
+  console.error(`Chromium didn't launch: ${reason.replace(/^.*?\]\[err\] /, "").trim()}`);
+  process.exit(2);
+});
 const context = await browser.newContext({ viewport: { width: 1600, height: 1100 } });
 const page = await context.newPage();
 
