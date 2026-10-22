@@ -9,7 +9,7 @@
  * repaints; each frame is held until the next one, so timing stays exact.
  *
  *   const browser = await chromium.launch({ args: launchArgs(1.35) });
- *   const context = await browser.newContext({ viewport: { width: 800, height: 800 }, deviceScaleFactor: 1.35 });
+ *   const context = await browser.newContext({ viewport: { width: 880, height: 880 }, deviceScaleFactor: 1.35 });
  *   const page = await context.newPage();
  *   // ...open the stage, set it up
  *   const recorder = new ScreencastRecorder({ dir: '<scratchpad>/rec-opening' });
@@ -42,9 +42,11 @@ export class ScreencastRecorder {
   /**
    * `dir` holds the raw frames. It must not exist yet or be empty: the recorder
    * never deletes anything, so point it at a scratch directory, not at the captures.
-   * `format` is the frame format: png is lossless, jpeg is smaller.
+   * `format` is the frame format. jpeg is the default: Chromium encodes it far
+   * faster than png, and at high densities png encoding caps the screencast
+   * near 20 fps. png is lossless, for when the encode can keep up.
    */
-  constructor({ dir, format = 'png', quality = 90 }) {
+  constructor({ dir, format = 'jpeg', quality = 90 }) {
     if (!dir) throw new Error('dir is required');
     if (!['png', 'jpeg'].includes(format)) throw new Error('format must be png or jpeg');
     this.dir = path.resolve(dir);

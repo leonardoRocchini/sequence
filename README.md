@@ -2,11 +2,12 @@
 
 Set di skill Agets.
 
-| Skill              | Cosa fa                                                                                                       |
-| ------------------ | ------------------------------------------------------------------------------------------------------------- |
-| `sequence-isolate` | Pagina dev-only che isola un componente in un frame fisso, con scene e pannello di controllo, per catturarlo. |
-| `sequence-script`  | Intervista e scrive lo `script.md` della cattura.                                                             |
-| `sequence-take`    | Esegue lo `script.md` nel browser e salva screenshot e video ritagliati sul frame.                            |
+| Skill                         | Cosa fa                                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `sequence-isolate`            | Pagina dev-only che isola un componente in un frame fisso, con scene e pannello di controllo, per catturarlo. |
+| `sequence-script`             | Intervista e scrive lo `script.md` della cattura.                                                             |
+| `sequence-take`               | Esegue lo `script.md` nel browser e salva screenshot e video ritagliati sul frame.                            |
+| `sequence-take-deterministic` | Come `sequence-take`, ma rende ogni fotogramma a tempo virtuale: video a 60 fps veri a qualunque risoluzione. |
 
 Pipeline: `/sequence-isolate` → `/sequence-script` → `/sequence-take`.
 

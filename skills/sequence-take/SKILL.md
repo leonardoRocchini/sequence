@@ -39,7 +39,7 @@ The third of three steps: `/sequence-isolate` builds the stage, `/sequence-scrip
    ```
 
    `/sequence-isolate done` removes only `isolate:` blocks, so the captures outlive the stage.
-2. **Open the stage** with a window larger than the frame. If the stage shows "window too small", the capture would be the wrong size: enlarge the window, don't shoot.
+2. **Open the stage** with a window just larger than the frame: the frame preset's CSS px plus 40 px on each side, so a 16:9 · 1280×720 frame opens at 1360×800. The video screencast renders the whole viewport and crops afterwards, so every pixel outside the frame costs frame rate. With the frame on `Auto`, the viewport is the frame. If the stage shows "window too small", the capture would be the wrong size: enlarge the window, don't shoot.
 3. **Set the panel** to the script's Stage values through DialKit, then press `H` for clean mode. Clean mode unmounts the panel, so a scene that overrides a setting leaves clean mode with `H`, changes it, and re-enters. Keys keep working in clean mode, so scenes can be switched with `1–9` without showing the picker.
 
 ### Phase 3: Shoot
