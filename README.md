@@ -6,9 +6,7 @@ Set di skill Agets.
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | `sequence-isolate`            | Pagina dev-only che isola un componente in un frame fisso, con scene e pannello di controllo, per catturarlo. |
 | `sequence-script`             | Intervista e scrive lo `script.md` della cattura.                                                             |
-| `sequence-take`               | Esegue lo `script.md` nel browser e salva screenshot e video ritagliati sul frame.                            |
-| `sequence-take-deterministic` | Come `sequence-take`, ma rende ogni fotogramma a tempo virtuale: video a 60 fps veri a qualunque risoluzione. |
-| `sequence-take-clock`         | Come `sequence-take-deterministic`, ma ferma l'orologio in JavaScript invece che nel compositor: funziona anche su macOS. |
+| `sequence-take`               | Esegue lo `script.md` nel browser e salva screenshot, frame e video ritagliati sul frame, a orologio fermo: 60 fps veri a qualunque risoluzione. |
 
 Pipeline: `/sequence-isolate` → `/sequence-script` → `/sequence-take`.
 
