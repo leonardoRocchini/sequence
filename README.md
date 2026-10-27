@@ -8,6 +8,7 @@ Set di skill Agets.
 | `sequence-script`             | Intervista e scrive lo `script.md` della cattura.                                                             |
 | `sequence-take`               | Esegue lo `script.md` nel browser e salva screenshot e video ritagliati sul frame.                            |
 | `sequence-take-deterministic` | Come `sequence-take`, ma rende ogni fotogramma a tempo virtuale: video a 60 fps veri a qualunque risoluzione. |
+| `sequence-take-clock`         | Come `sequence-take-deterministic`, ma ferma l'orologio in JavaScript invece che nel compositor: funziona anche su macOS. |
 
 Pipeline: `/sequence-isolate` → `/sequence-script` → `/sequence-take`.
 
