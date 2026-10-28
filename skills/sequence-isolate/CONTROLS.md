@@ -4,7 +4,7 @@ The picker answers "which scene". The panel answers "how is it shot": theme, fra
 
 ## DialKit
 
-[DialKit](https://github.com/joshpuckett/dialkit) is the fast path in a React project: selects and action buttons, values saved to `localStorage`, no panel UI to build. Plain `<select>` and `<button>` elements are fine everywhere else, inside one `<div class="stage-panel">` (the drawn pointer and clean mode find it by that class); give each select `data-stage-control="<key>"` (`theme`, `speed`, `pointer`, …) so `scripts/check.mjs` can set it. Don't build a custom panel, and don't study DialKit's source or README: wire it from the shape below.
+[DialKit](https://github.com/joshpuckett/dialkit) is the fast path in a React project: selects and action buttons, values saved to `localStorage`, no panel UI to build. Plain `<select>` and `<button>` elements are fine everywhere else, inside one `<div class="stage-panel">` (the drawn pointer and clean mode find it by that class); give each select `data-stage-control="<key>"` (`theme`, `speed`, `pointer`, …) so `/sequence-take` can set it. Don't build a custom panel, and don't study DialKit's source or README: wire it from the shape below.
 
 The panel holds these controls, and nothing else:
 
@@ -67,7 +67,7 @@ Install the clock before the component mounts (STAGE.md's mount gate waits for i
 
 The clock is [templates/clock.ts](templates/clock.ts): `installClock()` returns its uninstall function, and `setSpeed(n)` changes the speed. Copy it with `cp`, don't retype it.
 
-**What can escape it.** A library that captured `performance.now` or `requestAnimationFrame` by reference before the clock was installed keeps reading real time. That happens at import, in the first line of a module. Phase 5 checks for it: at 0.25x, every animation in the component must visibly slow down. Name any that don't in the handoff. Don't patch the component to fix it.
+**What can escape it.** A library that captured `performance.now` or `requestAnimationFrame` by reference before the clock was installed keeps reading real time. That happens at import, in the first line of a module. The stage doesn't check for it: an animation that doesn't slow down at 0.25x shows it. Don't patch the component to fix it.
 
 ## Keys
 

@@ -82,35 +82,11 @@ Write the scene data in the stage directory, one object per scene:
 
 **Completion criterion:** every file the stage created is under a path in its exclude block, and `git status --porcelain` matches the baseline except for the tracked files the block names in `# dependency:` and `# regenerated:` notes. `done` deletes only what the block lists, so a file missing from it survives the teardown.
 
-### Phase 5: Verify and hand off
+### Phase 5: Hand off
 
-Flip through every scene yourself before handing off. The check script is the way to do it when a browser is available; when it isn't, verification falls back rather than blocking the handoff.
+Don't verify the stage in a browser: no check script, no screenshots, no flipping through scenes. The handoff says the stage hasn't been checked.
 
-The stage runs on the project's own dev server, which is the user's to run. Find it by folder, never by port: another project may hold the usual port, and this one may run on any other. List the listeners with `lsof -nP -iTCP -sTCP:LISTEN`, and keep the one whose working directory (`lsof -a -p <pid> -d cwd -Fn`) is the app's directory. Its port goes in the stage URL. If none is running, stop and ask the user to start it (`! npm run dev`, or the project's script), then look again. Never start, restart, or stop a dev server yourself. A second one in the same folder shares its build cache with the user's, and nothing would stop it afterwards: `done` doesn't know about it. The static-site `http.server` (Phase 4) is the only server this skill starts.
-
-**The check script.** Run it once instead of driving the browser turn by turn. It needs `playwright-core`, which is never added to the project: install it in the scratchpad (`npm init -y && npm install playwright-core` in `<scratchpad>/stage-check`) and run from there. It uses `CHROMIUM_PATH`, or else the Chromium in Playwright's cache (`~/Library/Caches/ms-playwright` on macOS, `~/.cache/ms-playwright` on Linux).
-
-```sh
-cd <scratchpad>/stage-check && node <this skill's dir>/scripts/check.mjs http://localhost:<port>/isolate/<component> out
-```
-
-In one pass it opens every scene in both themes, screenshots the frame, toggles clean mode, sets speed to 0.25×, and moves the drawn pointer. It prints a JSON report and writes `out/contact-sheet.png` with every scene and theme on one image. Read the report and that one image, not the single shots. Open a single shot only to look closer at a problem. Fix what it finds and rerun it. Confirm that:
-
-- `console` and `requests` are empty (no errors, no network after load)
-- every scene has `themeChanged: true` and isn't `empty`, and the contact sheet shows the project's own fonts
-- `cleanMode.visibleOutsideStage` is empty, including dev overlays
-- `speed.notSlowed` is empty. The script only sees Web Animations, so check JS-driven motion (springs, `motion`'s frame loop) by eye. List any that don't slow down (CONTROLS.md, "What can escape it")
-- `pointer` is drawn at the center, is `text` over an input when the component has one, and is still drawn `inCleanMode`
-- `errors` is empty. It lists any panel control the script couldn't set
-
-Popovers and toasts are the one check the script can't make: open one by hand and confirm it appears above the stage, not under it.
-
-**No browser.** If there's no cached Chromium, or it doesn't launch (the script exits with `Chromium didn't launch: <reason>`, such as missing system libraries), don't repair the environment: no browser download, no system packages, no library workarounds. Say in one line why the script didn't run, then:
-
-- If the session has other browser tooling (Claude in Chrome, the built-in browser), open the stage with it and flip through every scene in both themes, read the console, and toggle `H`.
-- Otherwise, put a short manual checklist in the handoff for the user: every scene opens from the picker in both themes, `H` leaves only the frame on screen, at 0.25× the entrance visibly slows, the `Arrow` pointer follows the mouse and turns into an I-beam over an input, a popover opens above the stage, and a reload brings back the last scene and settings.
-
-Either way, the stage was not checked by a script: say so in the handoff, and report anything you couldn't confirm as unconfirmed, not as passing.
+The stage runs on the project's own dev server, which is the user's to run. Find it by folder, never by port: another project may hold the usual port, and this one may run on any other. List the listeners with `lsof -nP -iTCP -sTCP:LISTEN`, and keep the one whose working directory (`lsof -a -p <pid> -d cwd -Fn`) is the app's directory. Its port goes in the stage URL. If none is running, ask the user to start it (`! npm run dev`, or the project's script), then look again. Never start, restart, or stop a dev server yourself. A second one in the same folder shares its build cache with the user's, and nothing would stop it afterwards: `done` doesn't know about it. The static-site `http.server` (Phase 4) is the only server this skill starts.
 
 Hand off with the single URL (`/isolate/command-bar`), then:
 
@@ -119,9 +95,9 @@ Hand off with the single URL (`/isolate/command-bar`), then:
 | 1 | Default | Press ⌘K live to open |
 | 2 | Empty | Starts with no Bookmarks |
 
-Add the frame sizes in px (so a capture tool can be set to them), the keys (`H` hide chrome, `R` replay, `1–N` or `←`/`→` scenes), any animations that ignore the speed multiplier, a reminder that clean mode doesn't show the current speed (so check it before recording), and a line saying the stage is temporary, git-excluded, and removed with `done`. End with the next steps: `/sequence-script <component>` to direct the capture, `/sequence-take <component>` to shoot it, `done` when finished.
+Add the frame sizes in px (so a capture tool can be set to them), the keys (`H` hide chrome, `R` replay, `1–9` or `←`/`→` scenes), a reminder that clean mode doesn't show the current speed (so check it before recording), and a line saying the stage is temporary, git-excluded, and removed with `done`. End with the next steps: `/sequence-script <component>` to direct the capture, `/sequence-take <component>` to shoot it, `done` when finished.
 
-**Completion criterion:** every scene is reachable from the picker and renders correctly on first switch, and a reload brings back the last scene and settings — confirmed by the script or by eye, or handed to the user as the manual checklist and labeled unconfirmed.
+**Completion criterion:** the handoff has the URL with the running server's port, every scene, the frame sizes, and the keys.
 
 ### Phase 6: Teardown
 

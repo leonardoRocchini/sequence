@@ -23,9 +23,9 @@ The second of three steps: `/sequence-isolate` builds the stage, `/sequence-scri
 
 Find the stage from the `# isolate:<component>:begin` block in the exclude file (`git rev-parse --git-path info/exclude`). If there's none, stop and say `/sequence-isolate` comes first. Then read:
 
-- **The stage.** The picker's scenes, the panel's options, the keys ([CONTROLS.md](../sequence-isolate/CONTROLS.md)), and any animations its handoff said ignore the speed multiplier.
-- **The component** (or the stage's snapshot of it). Interactive elements and their handlers, CSS transitions and animations, motion libraries, and their durations.
-- **The tooling.** `/sequence-take` records video only with its `recorder.mjs`, which needs `ffmpeg` (on the `PATH`, or `ffmpeg-static` from the sequence repo's `install.sh`). Without it, there's no video. That decides which captures are possible.
+- **The stage.** The picker's scenes, the panel's options, and the keys ([CONTROLS.md](../sequence-isolate/CONTROLS.md)).
+- **The component** (or the stage's snapshot of it). Interactive elements and their handlers, CSS transitions and animations, motion libraries, and their durations. Motion that may escape the speed multiplier (CONTROLS.md, "What can escape it") goes in Notes as Inferred, so `/sequence-take` reports it: nothing else records it.
+- **The tooling.** `/sequence-take` makes every capture (screenshot, frames, video) with its `recorder.mjs`, which needs `ffmpeg` (on the `PATH`, or `ffmpeg-static` from the sequence repo's `install.sh`). Without it, there's no capture of any kind: say so before the interview.
 - **An existing `script.md`.** If there is one, the interview edits it instead of starting over.
 
 **Completion criterion:** you could list each scene's real states and interactions without asking the user.
@@ -36,10 +36,11 @@ Open with one sentence on what you found, then ask the most consequential open d
 
 1. Purpose: a still for reference, an interaction walkthrough, an animation study.
 2. Which scenes, in what order, and what happens in each.
-3. For animation: video or frames at offsets, full speed or slowed. For video, the format too (script-format.md, "Output"), taken from where the video ends up: social or portfolio is `.mp4`, a web page `.webm`, a README `.gif`, editing `.mov`. Ask only if the destination is unknown, and offer `.mp4` first.
-4. Framing the stage doesn't already settle: frame preset, theme, background, scale, pointer. A visible pointer in an automated capture needs the stage's drawn pointer (`Arrow` or `Dot`). If the stage predates it, say so and offer to rebuild with `/sequence-isolate`.
-5. Resolution, as its own question after the frame: the frame picks the aspect ratio and the composition (its px are CSS px, the layout space), the resolution picks the file's pixels. Offer the tiers for that frame's aspect with their px and density, plus the integer densities and a custom size. For a 1:1 · 800×800 frame: 720p · 720×720 px (0.9×), 1080p · 1080×1080 px (1.35×), 1440p (2K) · 1440×1440 px (1.8×), 1× · 800×800 px, 2× · 1600×1600 px. Mark the integer densities as crisp. When the user picks a fractional one, say once what it costs (1 px borders and small icons render soft, script-format.md "Output") and offer the nearest integer density. If they keep the fractional one, it goes in Notes. Pick the tier from the destination when the user named one (a social post, a retina screenshot for docs). A size with a different aspect ratio than the frame isn't an option: if the user wants that ratio, change the frame instead.
-6. Filenames and directory, only if the defaults won't do.
+3. Variants: whether some scenes are shot again with one setting changed, usually the theme ("both the opening and the three stills in Light and Dark?"). Ask once the scenes are known, offering the stage's own theme options, and settle which scenes get which variants. Each variant becomes its own scene (script-format.md, "Scene").
+4. For animation: video or frames at offsets, full speed or slowed. For video, whether it holds on the end state, and how long (script-format.md, `Hold`). For video, the format too (script-format.md, "Output"), taken from where the video ends up: social or portfolio is `.mp4`, a web page `.webm`, a README `.gif`, editing `.mov`. Ask only if the destination is unknown, and offer `.mp4` first.
+5. Framing the stage doesn't already settle: frame preset, theme (the Stage default, when variants don't already cover it), background, scale, pointer. A visible pointer in an automated capture needs the stage's drawn pointer (`Arrow` or `Dot`). If the stage predates it, say so and offer to rebuild with `/sequence-isolate`.
+6. Resolution, as its own question after the frame: the frame picks the aspect ratio and the composition (its px are CSS px, the layout space), the resolution picks the file's pixels. Offer the tiers for that frame's aspect with their px and density, plus the integer densities and a custom size. For a 1:1 · 800×800 frame: 720p · 720×720 px (0.9×), 1080p · 1080×1080 px (1.35×), 1440p (2K) · 1440×1440 px (1.8×), 1× · 800×800 px, 2× · 1600×1600 px. Mark the integer densities as crisp. When the user picks a fractional one, say once what it costs (1 px borders and small icons render soft, script-format.md "Output") and offer the nearest integer density. If they keep the fractional one, it goes in Notes. Pick the tier from the destination when the user named one (a social post, a retina screenshot for docs). A size with a different aspect ratio than the frame isn't an option: if the user wants that ratio, change the frame instead. With Frame `Auto` there are no tiers or densities: ask for a size in px, which becomes the viewport at 1×.
+7. Filenames and directory, only if the defaults won't do.
 
 Offer 2–4 concrete options drawn from the code. A free answer is always allowed.
 
@@ -55,7 +56,7 @@ Keep a ledger: **Confirmed** (the user said it, or the existing script has it), 
 
 ### Phase 3: Propose
 
-Show the plan compactly: purpose, scenes in order with their actions and captures, stage settings, the frame and the resolution as two lines (`Frame: 1:1 · 800×800 CSS px`, `Resolution: 1080p · 1080×1080 px (1.35×)`), outputs, and Notes (inferences and limitations). Ask one question: approve, or change something?
+Show the plan compactly: purpose, scenes in order with their actions and captures, stage settings, the variants as one line per shot rather than one per scene (`Opening → video · Dark, Light`), with the count of files they make, the frame and the resolution as two lines (`Frame: 1:1 · 800×800 CSS px`, `Resolution: 1080p · 1080×1080 px (1.35×)`), outputs, and Notes (inferences and limitations). Ask one question: approve, or change something?
 
 ### Phase 4: Write
 

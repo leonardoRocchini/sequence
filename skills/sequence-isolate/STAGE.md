@@ -1,6 +1,6 @@
 # The Stage
 
-The stage is what the component stands on: a full-viewport root, a capture frame of exact size, and a scale wrapper. Like the picker and the panel, it is **not a design decision**. Copy the markup verbatim and the CSS from `templates/stage.css`. The only things that change per run are the stage root's z-index and the background token in `--stage-bg`. The stage uses no project fonts or colors beyond that background.
+The stage is what the component stands on: a full-viewport root, a capture frame of exact size, and a scale wrapper. Like the picker and the panel, it is **not a design decision**. Copy the markup verbatim and the CSS from `templates/stage.css`. The only things that change per run are, in the CSS copy, the stage root's z-index and the dev-overlay selectors, and, in the markup, the background token in `--stage-bg`. The stage uses no project fonts or colors beyond that background.
 
 ## Anatomy
 
@@ -71,7 +71,7 @@ The shape is read on `pointermove`. When a component swaps the element under a s
 This applies to host 1 in SKILL.md, Phase 4 (a route inside an app). A Vite page or a static file (hosts 2 and 3) renders without the shell, so there's nothing to escape. Pick the first option that works without editing production files:
 
 1. **A route outside the shell.** The router lets a route skip the app layout (a top-level route in React Router or TanStack Router, a Next.js route group that already has its own root layout). Put the stage there. The stage root's fixed overlay then has nothing to cover.
-2. **Cover the shell.** The root layout wraps every route (a Next.js App Router root layout with a sidebar). The stage renders inside it, and the fixed stage root covers the shell. Its z-index must be above everything the shell positions and below the layer the component's portals use, or the component's popovers open underneath the stage. The `40` above assumes Tailwind-style `z-50` overlays. Set it from recon. If the shell fetches data to render, the stage inherits that dependency. Say so in the handoff.
+2. **Cover the shell.** The root layout wraps every route (a Next.js App Router root layout with a sidebar). The stage renders inside it, and the fixed stage root covers the shell. Its z-index must be above everything the shell positions and below the layer the component's portals use, or the component's popovers open underneath the stage. The `40` in `templates/stage.css` assumes Tailwind-style `z-50` overlays. Set it from recon. If the shell fetches data to render, the stage inherits that dependency. Say so in the handoff.
 
 Never move or edit the app's layout files to make room for the stage.
 

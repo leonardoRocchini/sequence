@@ -23,13 +23,24 @@
 - Picker scene: Default
 - Capture: screenshot, command-bar-default.png
 
-## Scene: Opening
+## Scene: Opening, dark
 - Picker scene: Default
 - Speed: 0.25×
 - Reset to: replay (R)
 - Action: press ⌘K
 - Wait for: the input is visible and focused
-- Capture: video, command-bar-opening.mp4
+- Hold: 1 s
+- Capture: video, command-bar-opening-dark.mp4
+
+## Scene: Opening, light
+- Picker scene: Default
+- Theme: Light
+- Speed: 0.25×
+- Reset to: replay (R)
+- Action: press ⌘K
+- Wait for: the input is visible and focused
+- Hold: 1 s
+- Capture: video, command-bar-opening-light.mp4
 
 ## Scene: Typing
 - Picker scene: Default
@@ -40,12 +51,12 @@
 
 ## Notes
 - Inferred: theme Dark, since the user said "the dark one".
-- Limitation: the result list's spring ignores the speed multiplier (from /sequence-isolate's handoff).
+- Limitation: the result list's spring ignores the speed multiplier (it captures `requestAnimationFrame` at import).
 ```
 
 ## Fields
 
-**Stage.** The values are the `/sequence-isolate` panel's own options ([CONTROLS.md](../../sequence-isolate/CONTROLS.md)): Frame, Theme, Background, Scale, Speed, Pointer. Frame is the panel option followed by `CSS px`: those px are the layout space the component is composed in, not the file's size, which is Output's Resolution. Pointer is `System`, `Hidden`, `Arrow`, or `Dot`. Only `Arrow` and `Dot` put a pointer in an automated capture, because they're drawn by the stage; the system pointer never appears in one. Never a raw viewport size, because the frame preset defines the composition and Output's Resolution defines the file size. A scene can override any of them (`Speed: 0.25×` above).
+**Stage.** The values are the `/sequence-isolate` panel's own options ([CONTROLS.md](../../sequence-isolate/CONTROLS.md)): Frame, Theme, Background, Scale, Speed, Pointer. Frame is the panel option followed by `CSS px`: those px are the layout space the component is composed in, not the file's size, which is Output's Resolution. Pointer is `System`, `Hidden`, `Arrow`, or `Dot`. Only `Arrow` and `Dot` put a pointer in an automated capture, because they're drawn by the stage; the system pointer never appears in one. Never a raw viewport size, because the frame preset defines the composition and Output's Resolution defines the file size. A scene can override any of them (`Speed: 0.25×` and `Theme: Light` above).
 
 **Output.** Directory defaults to `artifacts/captures/<component>/`.
 
@@ -82,8 +93,11 @@ Video format is the filename's extension. Each one stands for one encoding, so t
 | `Reset to` | How to get a clean starting point: `replay (R)`, or real interactions. Never by changing component state. |
 | `Action` | Real interactions: click, hover, focus, keys, typing, scroll, drag. Several are allowed, in order. |
 | `Wait for` | An observable condition: an element visible, a label changed, an animation finished. A fixed delay only when the scene captures at timed offsets. |
+| `Hold` | Optional, for video: how long the shot stays on the end state after `Wait for` is met, in page time. Default 0: the video ends on the frame the condition becomes true. |
 | `Capture` | `screenshot`, `frames at <offsets>`, or `video`, then the filename. `{ms}` in a filename is replaced by the offset. |
 
 A **scene** is a starting state plus what's shot from it. Hover, open, and typing are actions inside a scene, not scenes of their own, and a stage scene can be used by several script scenes.
+
+A **variant** is the same shot with one setting changed: the theme, a resolution. Each variant is a scene of its own, with the override written out and the value as a suffix of both the scene's name and the filename (`Opening, light`, `command-bar-opening-light.mp4`). The scene that keeps the Stage value gets the suffix too, so every variant's file says which one it is. Never a shorthand that expands into several scenes: `/sequence-take` shoots the blocks as written.
 
 **Notes.** Anything inferred rather than said by the user, and every known limitation. `/sequence-take` repeats them in its handoff.
