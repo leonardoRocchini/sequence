@@ -24,7 +24,7 @@ All three are user-invoked: Claude never runs them on its own.
 ## Install
 
 ```bash
-npx skills add leonardoRocchini/sequence
+npx skills add leonardoRocchini/sequence --skill '*'
 ```
 
 ## Claude Code plugin
