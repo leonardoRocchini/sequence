@@ -33,7 +33,7 @@ Read the component file yourself: the fixtures must match its props and data typ
 The report covers:
 
 - **Inputs.** Props, contexts, stores, data hooks and the query keys they read, URL state, and any `Date`/random/network use.
-- **Host.** Which of the three hosts in Phase 4 fits: the router and how routes are declared, the dev server (Vite or other) and its root, or for a static site its input and output directories. In a monorepo where the component lives in a package, whether an app in the repo already renders that package.
+- **Host.** Which of the three hosts in Phase 4 fits: the router and how routes are declared, the dev server (Vite or other) and its root, or for a static site its input and output directories. In a monorepo where the component lives in a package, whether an app in the repo already renders that package. Whether the framework has server routes in development (a Next.js route handler, a SvelteKit `+server`, a Nuxt server route, a resource route with an action), which decides how the stage state reaches `/sequence-script` (CONTROLS.md, "Stage state").
 - **Shell.** What wraps every route (layouts, sidebars, providers that fetch). Decide how the stage escapes it (STAGE.md, "Escaping the shell"). Find the shell's highest z-index and the z-index the project uses for portals (popovers, toasts).
 - **Theme.** How dark mode is applied (a class, a data attribute, a media query) and whether its selectors work on any element or only on `html`.
 - **Backgrounds.** Two or three project tokens the component plausibly sits on (page canvas, raised surface). These become the panel's background options.
@@ -55,8 +55,9 @@ Write the scene data in the stage directory, one object per scene:
 - Dates are fixed literals. If the component formats "2 hours ago" from now, freeze the clock for the stage only.
 - Images and icons are local files or inline data, never hotlinked.
 - Data hooks are fed by **seeding a fresh provider instance** (for example, a new `QueryClient` with `setQueryData` on the exact keys and `staleTime: Infinity`), nested around the component so it never reads the app's live state and never fetches.
+- **Editable text.** Next to the scenes, export the paths the panel's Content section may edit, per scene: `export const editable = { Default: ["title", "items[0].title", "user.name"] }`. Only strings the component displays as text. Leave out ids, URLs, dates, enum values, and anything the component parses or compares, because changing them would break its types or its determinism (CONTROLS.md, "Content"). Seeded data that the component reads through a hook can be listed too, as long as the seed is built from the scene's fixture object, so the overrides reach it.
 
-**Completion criterion:** every scene supplies every input from the recon list, and a grep of the stage directory finds no `Date.now()`, argument-less `new Date()`, `Math.random()`, `fetch`, or remote URL outside the stage's own clock freeze (an SVG `xmlns` is fine). Determinism is cheapest to fix here, before the stage is built around the data.
+**Completion criterion:** every scene supplies every input from the recon list, and a grep of the stage directory finds no `Date.now()`, argument-less `new Date()`, `Math.random()`, `fetch`, or remote URL outside the stage's own clock freeze and its state save (`_stage/state.ts`, CONTROLS.md "Stage state"; an SVG `xmlns` is fine). Determinism is cheapest to fix here, before the stage is built around the data.
 
 ### Phase 4: Build the stage
 
@@ -75,10 +76,11 @@ Write the scene data in the stage directory, one object per scene:
   3. **A static site** (plain HTML and CSS, or a generator such as Eleventy). One HTML file in the excluded directory, placed outside every directory the build reads or publishes, linking the project's real stylesheets and fonts by relative path. Module scripts don't run from `file://`, so serve it from the repo root with `python3 -m http.server <port>` (run in the background, nothing installed) rather than the site's own dev server, which would only serve its input directory. Note the server in the exclude block before starting it (`# server: http.server <port>`), so `done` stops it. Use the plain-JS wiring in PICKER.md and plain controls.
 
   Anything else (a webpack app with no router, a package with no dev server and no app that renders it): stop and ask. Never add a router, a dev server, or a build entry to the project to make room for the stage.
-- **Templates.** Copy the fixed chrome in one command, never retype it: `cp <this skill's dir>/templates/{stage.css,clock.ts,pointer.ts} <stage dir>/_stage/`. In the copy, edit only the `.stage-root` z-index and the dev-overlay selectors (STAGE.md). For a plain-JS stage (host 3, or any stage without a TypeScript build), drop the type annotations.
-- **Stage.** Build the root, the frame, and the scale wrapper from [STAGE.md](STAGE.md). Inside them go the fixture providers, then the component. The component mounts only after the fonts are ready and the speed clock is installed.
+- **Templates.** Copy the fixed chrome in one command, never retype it: `cp <this skill's dir>/templates/{stage.css,clock.ts,pointer.ts,content.ts,state.ts} <stage dir>/_stage/`. In the copy, edit only the `.stage-root` z-index and the dev-overlay selectors (STAGE.md). For a plain-JS stage (host 3, or any stage without a TypeScript build), drop the type annotations.
+- **Stage.** Build the root, the frame, and the scale wrapper from [STAGE.md](STAGE.md). Inside them go the fixture providers, then the component, fed with the scene's fixture through `applyContent` (CONTROLS.md, "Content"). The component mounts only after the fonts are ready and the speed clock is installed.
 - **Picker.** Build it from [PICKER.md](PICKER.md), one tab per scene from Phase 1. The URL stays fixed: scenes are tabs, never query params.
-- **Panel.** Build it from [CONTROLS.md](CONTROLS.md) (DialKit in React, plain controls elsewhere): theme, frame, background (the options from Phase 2), scale, speed, pointer (the optional drawn pointer from STAGE.md), and replay. Add the stage's keys.
+- **Panel.** Build it from [CONTROLS.md](CONTROLS.md) (DialKit in React, plain controls elsewhere): theme, frame, background (the options from Phase 2, then Custom with its color), scale, speed, pointer (the optional drawn pointer from STAGE.md), and replay. Then the Content panel for the editable paths. Add the stage's keys.
+- **State.** Save the stage state to `stage-state.json` through the stage's own dev-only route (CONTROLS.md, "Stage state"). On a host with no server route, skip the route and add the "Copy for script" action to the panel instead. A route outside the stage directory (Nuxt's `server/`) goes in the exclude block before it's written.
 
 **Completion criterion:** every file the stage created is under a path in its exclude block, and `git status --porcelain` matches the baseline except for the tracked files the block names in `# dependency:` and `# regenerated:` notes. `done` deletes only what the block lists, so a file missing from it survives the teardown.
 
@@ -95,7 +97,7 @@ Hand off with the single URL (`/isolate/command-bar`), then:
 | 1 | Default | Press ⌘K live to open |
 | 2 | Empty | Starts with no Bookmarks |
 
-Add the frame sizes in px (so a capture tool can be set to them), the keys (`H` hide chrome, `R` replay, `1–9` or `←`/`→` scenes), a reminder that clean mode doesn't show the current speed (so check it before recording), and a line saying the stage is temporary, git-excluded, and removed with `done`. End with the next steps: `/sequence-script <component>` to direct the capture, `/sequence-take <component>` to shoot it, `done` when finished.
+Add the frame sizes in px (so a capture tool can be set to them), the keys (`H` hide chrome, `R` replay, `1–9` or `←`/`→` scenes), a reminder that clean mode doesn't show the current speed (so check it before recording), that the Content panel edits the scene's text in place and Reset brings back the fixture's (or, when no scene has editable paths, that there's no Content panel because the text is written in the component's code), that the panel's settings, saved versions, and edited text reach `/sequence-script` on their own through `stage-state.json` (or, with no server route, through "Copy for script", pasted into it), and a line saying the stage is temporary, git-excluded, and removed with `done`. End with the next steps: `/sequence-script <component>` to direct the capture, `/sequence-take <component>` to shoot it, `done` when finished.
 
 **Completion criterion:** the handoff has the URL with the running server's port, every scene, the frame sizes, and the keys.
 
