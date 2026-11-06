@@ -1,5 +1,7 @@
 # sequence
 
+[![skills.sh](https://skills.sh/b/leonardoRocchini/sequence)](https://skills.sh/leonardoRocchini/sequence)
+
 Agent skills that capture a UI component in isolation, as screenshots, frame sequences and videos, for portfolios, social posts and documentation.
 
 The component renders alone in a fixed-size frame, with real fonts and tokens and curated content, and every frame of a video is rendered on a stopped clock: true 60 fps at any resolution, on any machine. Nothing is added to your production code, and nothing the skills create can be committed.
