@@ -1,0 +1,10 @@
+{
+  "name": "sequence",
+  "description": "Capture a UI component in isolation: a throwaway stage, a capture script, and deterministic 60 fps screenshots, frame sequences and videos.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Leonardo Rocchini"
+  },
+  "repository": "https://github.com/leonardoRocchini/sequence",
+  "license": "MIT"
+}

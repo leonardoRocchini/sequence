@@ -1,0 +1,14 @@
+{
+  "name": "sequence",
+  "description": "Agent skills that capture a UI component in isolation for portfolios, social posts and docs.",
+  "owner": {
+    "name": "Leonardo Rocchini"
+  },
+  "plugins": [
+    {
+      "name": "sequence",
+      "source": "./",
+      "description": "Capture a UI component in isolation: a throwaway stage, a capture script, and deterministic 60 fps screenshots, frame sequences and videos."
+    }
+  ]
+}

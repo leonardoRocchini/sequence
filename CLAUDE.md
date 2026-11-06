@@ -11,8 +11,10 @@ Repo di skill per Claude Code che servono a catturare un componente UI in isolam
 ## Struttura
 
 - `skills/<nome>/SKILL.md`: la skill. `sequence-isolate` ha anche `STAGE.md`, `PICKER.md`, `CONTROLS.md`, i template da copiare (`templates/`: stage.css, clock.ts per lo speed clock, pointer.ts, content.ts per i testi modificati dal pannello, state.ts per lo stato passato a `/sequence-script`). `sequence-take` ha `references/script-format.md`, il formato dello `script.md` condiviso con `sequence-script`, e `scripts/recorder.mjs`, il registratore: un init script sostituisce `performance.now`, `Date.now`, timer, rAF e `document.timeline`, mette in pausa e posiziona le Web Animations, e fa uno screenshot di Playwright per fotogramma; poi ritaglio, scala e codifica in un passaggio ffmpeg. Niente begin-frame control di Chromium, che su macOS non è supportato.
-- `install.sh`: crea un symlink per ogni skill in `~/.claude/skills/`, quindi le modifiche qui sono subito attive. Rilancialo quando aggiungi una skill. Se `ffmpeg` non è nel `PATH`, installa `ffmpeg-static` (dipendenza in `package.json`) per `/sequence-take`.
+- `.claude-plugin/`: `plugin.json` e `marketplace.json`, entrambi `sequence`, per installarla come plugin di Claude Code (`/plugin marketplace add leonardoRocchini/sequence`); in alternativa `npx skills add leonardoRocchini/sequence`. Le skill si trovano da sole in `skills/`. Alza `version` in `plugin.json` nello stesso commit di ogni modifica sotto `skills/`: `claude plugin update` guarda solo quella. Dopo aver toccato i manifest, `claude plugin validate .`.
+- `install.sh`: per lo sviluppo. Crea un symlink per ogni skill in `~/.claude/skills/`, quindi le modifiche qui sono subito attive. Rilancialo quando aggiungi una skill.
+- Le skill si citano a vicenda con link relativi (`../sequence-take/references/script-format.md`): vanno installate tutte e tre.
 
 ## Convenzioni
 
-- Le skill sono scritte in inglese, la documentazione della repo in italiano.
+- Le skill e il README (pubblico) sono in inglese; il resto della documentazione della repo (questo file, i commenti di `install.sh`) in italiano.
