@@ -19,11 +19,6 @@
 - Directory: artifacts/captures/command-bar
 - Resolution: 1440p · 2560×1440 px (2×)
 
-## Content
-### Default
-- items[0].title: "Q3 roadmap review"
-- user.name: "Giulia Ferri"
-
 ## Scene: Default
 - Picker scene: Default
 - Capture: screenshot, command-bar-default.png
@@ -47,15 +42,6 @@
 - Hold: 1 s
 - Capture: video, command-bar-opening-light.mp4
 
-## Scene: Opening, long title
-- Picker scene: Default
-- Content: items[0].title = "Quarterly planning for the design system team"
-- Speed: 0.25×
-- Reset to: replay (R)
-- Action: press ⌘K
-- Wait for: the input is visible and focused
-- Capture: video, command-bar-opening-long-title.mp4
-
 ## Scene: Typing
 - Picker scene: Default
 - Reset to: replay (R)
@@ -71,8 +57,6 @@
 ## Fields
 
 **Stage.** The values are the `/sequence-isolate` panel's own options ([CONTROLS.md](../../sequence-isolate/CONTROLS.md)): Frame, Theme, Background, Scale, Speed, Pointer. Frame is the panel option followed by `CSS px`: those px are the layout space the component is composed in, not the file's size, which is Output's Resolution. Background is `Original` (the token the component sits on in the app) or `Custom` followed by a hex (`Custom #0E1116`). Pointer is `System`, `Hidden`, `Arrow`, or `Dot`. Only `Arrow` and `Dot` put a pointer in an automated capture, because they're drawn by the stage; the system pointer never appears in one. Never a raw viewport size, because the frame preset defines the composition and Output's Resolution defines the file size. A scene can override any of them (`Speed: 0.25×` and `Theme: Light` above).
-
-**Content.** Optional. The text the stage's Content panel edits ([CONTROLS.md](../../sequence-isolate/CONTROLS.md), "Content"), as overrides of the fixture, one `###` block per picker scene, one line per fixture path, the text as a JSON string. Only paths the stage lists as editable. A picker scene with no block, or a script with no section, shoots the fixture's own text. The section replaces the stage's content store for the whole take: overrides left in the user's browser don't count, only what's written here.
 
 **Output.** Directory defaults to `artifacts/captures/<component>/`.
 
@@ -106,7 +90,6 @@ Video format is the filename's extension. Each one stands for one encoding, so t
 | Field | Meaning |
 | --- | --- |
 | `Picker scene` | A tab that exists on the stage's picker. Scenes are tabs, never URL params. |
-| `Content` | Optional, one line per path: `<path> = "<text>"`. Overrides the Content section for this shot only, on top of its picker scene's block. |
 | `Reset to` | How to get a clean starting point: `replay (R)`, or real interactions. Never by changing component state. |
 | `Action` | Real interactions: click, hover, focus, keys, typing, scroll, drag. Several are allowed, in order. |
 | `Wait for` | An observable condition: an element visible, a label changed, an animation finished. A fixed delay only when the scene captures at timed offsets. |

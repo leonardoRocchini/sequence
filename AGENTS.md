@@ -14,7 +14,7 @@ Nothing here tests itself. A change is checked by running the pipeline on a real
 
 Each skill lives in `skills/<skill-name>/`, with `SKILL.md` as the entry point and supporting files beside it.
 
-- `sequence-isolate` builds a throwaway, dev-only page that mounts one component in a fixed-size frame, with fixture scenes, a scene picker, a control panel and a clean mode (`H`). `STAGE.md`, `PICKER.md` and `CONTROLS.md` specify the stage, the picker and the panel. `templates/` holds the files copied verbatim into every stage: `stage.css`, `clock.ts` (the speed clock), `pointer.ts`, `content.ts` (text edited from the panel) and `state.ts` (the state handed to `sequence-script`). `done` deletes the stage.
+- `sequence-isolate` builds a throwaway, dev-only page that mounts one component in a fixed-size frame, with fixture scenes, a scene picker, a control panel and a clean mode (`H`). `STAGE.md`, `PICKER.md` and `CONTROLS.md` specify the stage, the picker and the panel. `templates/` holds the files copied verbatim into every stage: `stage.css`, `clock.ts` (the speed clock), `pointer.ts` and `state.ts` (the state handed to `sequence-script`). `done` deletes the stage.
 - `sequence-script` interviews the user and writes the capture's `script.md` into the stage directory. It has no supporting files.
 - `sequence-take` runs `script.md` in Chromium through Playwright and saves files cropped to the frame in `artifacts/captures/<component>/`. `references/script-format.md` is the format of `script.md`. `scripts/recorder.mjs` renders every frame on a stopped clock: an init script replaces `performance.now`, `Date.now`, the timers, rAF and `document.timeline`, pauses and seeks every Web Animation, and screenshots one frame at a time. One ffmpeg pass then crops, scales and encodes. It uses no begin-frame control, which Chromium does not support on macOS.
 
@@ -28,7 +28,6 @@ The skills run in sequence and hand state to each other through files and keys. 
 | `# take:<component>:begin/end` blocks | `sequence-take` Phase 2 | `sequence-isolate` `done`, which leaves them alone |
 | The format of `script.md` | `sequence-take/references/script-format.md` | `sequence-script`, which writes it |
 | `stage-state.json` and "Copy for script" | `CONTROLS.md`, "Stage state" | `sequence-script` |
-| The content key `isolate:<component>:content`, the fixtures' `editable` export and `data-stage-content` | `CONTROLS.md`, "Content" | `sequence-script` and `sequence-take` |
 | Finding the dev server by folder, never by port | `sequence-isolate` Phase 5 | `sequence-take` Phase 1 |
 
 The skills link each other's files by relative path (`../sequence-take/references/script-format.md`), so all three must be installed together. After moving or renaming a file, grep `skills/` for `../sequence-` and fix every link.
@@ -48,7 +47,7 @@ A user-invoked skill cannot invoke another user-invoked skill. So each handoff e
 - Everything is in English: the skills, `README.md` and this file.
 - Frontmatter has `name` matching the directory, `description`, `argument-hint` and `disable-model-invocation: true`.
 - A skill opens with what it is and what it does not do, then numbered **Hard rules**, then a numbered workflow of phases. Every phase ends on a **Completion criterion**.
-- Point at a section by its name in quotes (CONTROLS.md, "Content") or at a phase by its number within the same skill. Renaming a section means grepping for its old name across `skills/`.
+- Point at a section by its name in quotes (CONTROLS.md, "Stage state") or at a phase by its number within the same skill. Renaming a section means grepping for its old name across `skills/`.
 - Handoffs are short. The thing the user wants comes first on its own line, a URL, a path or a directory, then a few lines and the `Next:` line. Each skill's last phase specifies its own.
 - A skill never touches production code and never leaves a file that can be committed: everything it creates is listed in `.git/info/exclude` before it is written.
 - A skill's line in `README.md` describes the same thing as its `description`. Change both together.

@@ -1,6 +1,6 @@
 # The Control Panel
 
-The picker answers "which scene". The panel answers "how is it shot": theme, frame, background, scale, speed, and pointer, plus the scene's text. Every control frames or times the component, or edits the fixture text it receives. None of them changes the component's code or styles, and none sets a prop the fixture doesn't already hold. A control that would doesn't belong here.
+The picker answers "which scene". The panel answers "how is it shot": theme, frame, background, scale, speed, and pointer. Every control frames or times the component. None of them changes the component's code or styles, and none sets a prop the fixture doesn't already hold. A control that would doesn't belong here.
 
 The panel serves two kinds of capture: the user recording the stage with their own tool, where what's on screen is the shot, and `/sequence-take`, which can't see the user's browser. So every value the panel holds is persisted, and the stage saves all of it to a file `/sequence-script` reads ("Stage state" below).
 
@@ -21,7 +21,6 @@ The panel holds these controls, and nothing else:
 | Pointer | select | System, Hidden, Arrow, Dot (default System) |
 | Replay | action | remounts the current scene (same as `R`) |
 | Copy for script | action | only on a host with no server route: copies the stage state ("Stage state" below) |
-| Content | text, one per editable path | its own panel, for the current scene ("Content" below) |
 
 Put the frame size in the option label, so the panel shows the px to set in the capture tool.
 
@@ -62,16 +61,6 @@ Wiring rules:
 - **Clean mode removes it.** Render `<DialRoot>` (or mount the vanilla panel) only while chrome is visible. When `H` turns on clean mode, unmount it rather than hiding it with CSS: DialKit may portal outside any wrapper you'd target. Its values live in its store, so they survive the unmount.
 - **The dependency is part of the stage.** If the project doesn't already have DialKit, installing it changes the package manifest and the lockfile, which are tracked files. Record it in the exclude block as `# dependency: dialkit (<package dir>)` before installing, so `done` removes it with the package manager. Never use `git checkout` on those files: they may hold the user's own uncommitted changes. If DialKit's peer dependency (`motion`) isn't already in the project, record that too. If the project already had DialKit, record nothing and leave it. A DialKit that another stage installed isn't the project's: if another `# isolate:` block in the exclude file records it, record it in this block too, so the teardown of the other stage doesn't remove it from under this one (SKILL.md, Phase 6). Same for `motion`.
 
-## Content
-
-The fixture's text, editable in place: a title that reads better on camera, a name that fits the frame, without asking Claude to edit a file. The fields edit the fixture the component receives, never the component's DOM. A `contenteditable` component would get its text rewritten by the next render or replay, show a caret on camera, and change a DOM the component owns.
-
-- **Which fields.** Only the paths the fixture file lists as editable for that scene (SKILL.md, Phase 3): displayed text, never ids, URLs, dates, or enum values, whose change would break the component's types or the determinism. Text written in the component's own code isn't fixture text, so it has no field: it's the product.
-- **Store.** [templates/content.ts](templates/content.ts) owns one `localStorage` key, `isolate:<component>:content`, holding `{ "<scene name>": { "<path>": "<text>" } }`. Paths are fixture paths (`items[0].title`), so they survive a panel rebuild and read the same in `script.md`. Copy it with `cp`, don't retype it. DialKit's `persist` doesn't store content: the key does.
-- **Apply.** The stage keeps the current scene's overrides in state, read with `readContent()` on every mount (scene switch, replay, load), and renders the component with `applyContent(fixture, overrides)`. Reading on every mount is the contract `/sequence-take` relies on: it writes the key, presses `R`, and the scene mounts with its text. `applyContent` sets `data-stage-content` on `html` to `ok`, or to `missing:<paths>` when an override no longer matches the fixture (the fixture changed after the text was edited). Never drop a missing override silently.
-- **Edit.** A field change calls `writeContent()` and updates the state, so the component re-renders with the new props and keeps its key: typing never replays the entrance. An empty field is a valid text; Reset is the way back to the fixture.
-- **Panel.** A second DialKit panel, `Content`, rendered by a child keyed by the scene so its config follows the scene: one `text` control per editable path (label: the path's last segment, or a short name when two collide), defaulting to the current text (`getText` on the applied fixture), plus a `reset` action that calls `resetContent()` for the scene. Give it `id: "isolate:<component>:content:<scene>"` and no `persist`. Write its changes to the key from an effect on the values it returns, and only real changes: a value equal to the fixture's own text removes the override (`writeContent(…, null)`), so the key and the stage state hold only what the user actually changed. Like the main panel, it's unmounted in clean mode. A plain panel uses one `<input data-stage-content="<path>">` per path inside `.stage-panel`, and remounts the scene on input if the stage can't re-render in place. A scene with no editable paths has no Content panel.
-
 ## Stage state
 
 Everything the panel holds, in one JSON file `/sequence-script` reads, so the interview starts from what the user already set instead of asking again. Claude can't read the user's browser, so the stage writes the file itself. [templates/state.ts](templates/state.ts) has the shape and the two ways out: `saveState()` and `copyState()`. Copy it with `cp`, don't retype it.
@@ -84,14 +73,13 @@ Everything the panel holds, in one JSON file `/sequence-script` reads, so the in
   "versions": [
     { "name": "V1", "stage": { "theme": "Dark", "frame": "16:9 · 1280×720", "background": "Custom", "backgroundColor": "#0E1116", "scale": "1×", "speed": "0.25×", "pointer": "Arrow" } },
     { "name": "V2", "stage": { "theme": "Light", "frame": "1:1 · 800×800", "background": "Original", "backgroundColor": "#111111", "scale": "2×", "speed": "1×", "pointer": "Arrow" } }
-  ],
-  "content": { "Default": { "items[0].title": "Q3 roadmap review" } }
+  ]
 }
 ```
 
 - **Values are labels.** Every value is what the panel shows (`16:9 · 1280×720`, `0.25×`), so the script copies them as they are.
-- **Versions.** DialKit's versions are the base version plus the presets "Save version" adds. Names default to `V1` for the base and `V2`, `V3`, … for the presets, and the user can rename them. List the base first: `DialStore.getBaseName(id)`, with its values from the persisted panel (`baseValues` in the JSON at `DialStore.getPresetStorage(id)`) while a preset is active, and from the live values otherwise. DialStore has no getter for them, and leaving the base out loses a version: with `V2` loaded, `stage` holds V2's values and nothing holds V1's. Then each of `DialStore.getPresets(id)`. Map each one to the same shape as `stage` and leave out the actions. `stage` is whichever version is loaded, so a version equal to it is the active one, not a duplicate. A version holds the shooting settings only: not the scene, not the text. A plain panel has no versions, so it writes `[]`.
-- **When to save.** On every change of the panel's values, the versions (`DialStore.subscribe("isolate:<component>", …)` fires on save, load, and delete), the scene, and the content. `saveState()` debounces and skips identical writes.
+- **Versions.** DialKit's versions are the base version plus the presets "Save version" adds. Names default to `V1` for the base and `V2`, `V3`, … for the presets, and the user can rename them. List the base first: `DialStore.getBaseName(id)`, with its values from the persisted panel (`baseValues` in the JSON at `DialStore.getPresetStorage(id)`) while a preset is active, and from the live values otherwise. DialStore has no getter for them, and leaving the base out loses a version: with `V2` loaded, `stage` holds V2's values and nothing holds V1's. Then each of `DialStore.getPresets(id)`. Map each one to the same shape as `stage` and leave out the actions. `stage` is whichever version is loaded, so a version equal to it is the active one, not a duplicate. A version holds the shooting settings only, not the scene. A plain panel has no versions, so it writes `[]`.
+- **When to save.** On every change of the panel's values, the versions (`DialStore.subscribe("isolate:<component>", …)` fires on save, load, and delete), and the scene. `saveState()` debounces and skips identical writes.
 - **No timestamp.** The file's modification time says how old it is. A `Date.now()` in the stage would break the determinism grep (SKILL.md, Phase 3).
 
 ### Where it goes

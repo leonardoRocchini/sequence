@@ -1,6 +1,5 @@
 // Stage state: what the panel holds, handed to /sequence-script, which can't read the browser.
 // Saved to stage-state.json through the stage's dev-only route, or copied when the host has none.
-import type { Content } from "./content";
 
 // Panel values as the panel shows them: option labels ("16:9 · 1280×720", "0.25×"), hex for the color.
 export type StageValues = {
@@ -18,13 +17,12 @@ export type StageState = {
   scene: string;
   stage: StageValues;
   versions: { name: string; stage: StageValues }[];
-  content: Content;
 };
 
 let timer: ReturnType<typeof setTimeout> | undefined;
 let last = "";
 
-// Debounced, and skipped when nothing changed, so typing in a field writes the file once.
+// Debounced, and skipped when nothing changed, so a burst of panel changes writes the file once.
 export function saveState(endpoint: string, state: StageState) {
   const body = JSON.stringify(state, null, 2);
   if (body === last) return;
