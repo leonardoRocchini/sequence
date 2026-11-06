@@ -151,4 +151,4 @@ One listener on `document` handles the stage's own keys; its plain-JS form is in
 
 Ignore keys while focus is in an input, textarea, select, or contenteditable, or while a modifier is held, so the component's own shortcuts keep working.
 
-**Clean mode hides everything, speed included.** Nothing on screen says the recording is slowed down. That is deliberate, because the capture must be clean. The handoff reminds the user to check the speed before recording.
+**Clean mode hides everything, speed included.** Nothing on screen says the recording is slowed down. That is deliberate, because the capture must be clean. Check the speed in the panel before recording.

@@ -70,7 +70,7 @@ Write the scene data in the stage directory, one object per scene:
   ```
 
   The block is the manifest `done` deletes from, so list every path the stage creates and nothing else. Prefer one directory: in Next.js, route, fixtures (`_fixtures/`), snapshots, and assets all fit under the route folder. If a tool regenerates a *tracked* file because of the stage (a file-based router's generated route tree), exclude can't hide it. Note that file as a comment in the block (`# regenerated: src/routeTree.gen.ts`) so `done` restores it. A dependency the stage installs is noted the same way (`# dependency: dialkit (apps/web)`, see CONTROLS.md).
-- **Host.** Pick the first that fits, and say which in the handoff. The component stays in place; everything the stage needs lives in the excluded directory.
+- **Host.** Pick the first that fits. The component stays in place; everything the stage needs lives in the excluded directory.
   1. **An app with a router** (Next.js, React Router, TanStack Router, SvelteKit, Nuxt). A dev-only route, `/isolate/<component>` or the framework equivalent, gated on the environment. This includes a component in a monorepo package that an app in the repo already renders: the stage goes in that app.
   2. **A Vite dev server with no router to hook into** (a single-page app, or a library package with its own Vite setup). A separate page in the excluded directory, `isolate/<component>/index.html` under Vite's root, with a module script that mounts the stage. In dev, Vite serves any HTML file under its root at its path (`/isolate/<component>/`) without a config change, and the production build only bundles the entries it's configured with, so the page is never built. There's no shell to escape. The page has none of the app's setup either: import the project's global stylesheet and font setup, and wrap the component in the providers it needs, the same ones the app's entry uses.
   3. **A static site** (plain HTML and CSS, or a generator such as Eleventy). One HTML file in the excluded directory, placed outside every directory the build reads or publishes, linking the project's real stylesheets and fonts by relative path. Module scripts don't run from `file://`, so serve it from the repo root with `python3 -m http.server <port>` (run in the background, nothing installed) rather than the site's own dev server, which would only serve its input directory. Note the server in the exclude block before starting it (`# server: http.server <port>`), so `done` stops it. Use the plain-JS wiring in PICKER.md and plain controls.
@@ -90,16 +90,22 @@ Don't verify the stage in a browser: no check script, no screenshots, no flippin
 
 The stage runs on the project's own dev server, which is the user's to run. Find it by folder, never by port: another project may hold the usual port, and this one may run on any other. List the listeners with `lsof -nP -iTCP -sTCP:LISTEN`, and keep the one whose working directory (`lsof -a -p <pid> -d cwd -Fn`) is the app's directory. Its port goes in the stage URL. If none is running, ask the user to start it (`! npm run dev`, or the project's script), then look again. Never start, restart, or stop a dev server yourself. A second one in the same folder shares its build cache with the user's, and nothing would stop it afterwards: `done` doesn't know about it. The static-site `http.server` (Phase 4) is the only server this skill starts.
 
-Hand off with the single URL (`/isolate/command-bar`), then:
+Keep the handoff short: the user wants the URL, and the rest is in the panel. The full URL, with the running server's port, goes on its own line first, as a link (`http://localhost:3000/isolate/command-bar`). Then at most five short lines, nothing else:
 
-| # | Scene | Notes |
-| --- | --- | --- |
-| 1 | Default | Press ⌘K live to open |
-| 2 | Empty | Starts with no Bookmarks |
+```
+http://localhost:3000/isolate/command-bar
 
-Add the frame sizes in px (so a capture tool can be set to them), the keys (`H` hide chrome, `R` replay, `1–9` or `←`/`→` scenes), a reminder that clean mode doesn't show the current speed (so check it before recording), that the Content panel edits the scene's text in place and Reset brings back the fixture's (or, when no scene has editable paths, that there's no Content panel because the text is written in the component's code), that the panel's settings, saved versions, and edited text reach `/sequence-script` on their own through `stage-state.json` (or, with no server route, through "Copy for script", pasted into it), and a line saying the stage is temporary, git-excluded, and removed with `done`. End with the next steps: `/sequence-script <component>` to direct the capture, `/sequence-take <component>` to shoot it, `done` when finished.
+Scenes: 1 Default (press ⌘K to open), 2 Empty
+Keys: H hide panel · R replay · 1–9 scenes
+Not checked in a browser. Added dialkit and motion to package.json: done removes them.
+Next: /sequence-script command-bar, then /sequence-take command-bar, done when finished.
+```
 
-**Completion criterion:** the handoff has the URL with the running server's port, every scene, the frame sizes, and the keys.
+- **Scenes** on one line, with a note in parentheses only where the scene needs something done live.
+- **One line of warnings**, only those that apply: the stage hasn't been checked (always), dependencies added to tracked files, a scene that couldn't be built as asked, no Content panel because the text is written in the component's code, a scene that renders a snapshot of the source (Phase 2), a shell that fetches data (STAGE.md).
+- **Leave out** what the stage shows or the next skill handles: frame sizes, the panel's controls, how the state reaches `/sequence-script`, that the stage is git-excluded.
+
+**Completion criterion:** the handoff opens with the URL with the running server's port, and lists every scene and the keys.
 
 ### Phase 6: Teardown
 

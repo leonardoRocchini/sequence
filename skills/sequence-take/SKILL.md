@@ -98,9 +98,19 @@ For each scene, in order: compute its content, the Content section with the scen
 
 ### Phase 4: Hand off
 
-- each file saved, with its path, pixel size, and frame count
-- the scenes and actions performed
-- what couldn't be done, and why, including any time source the clock doesn't cover
-- every assumption or deviation from the script, plus the script's Notes
-- known limits: an animation that starts between two frames is timed from the next one (up to one frame early); looping animations restart at the take's first frame; a re-take of the same scene gives the same frames as long as the scene uses only the clocks above, except a hover that Chromium applies on its own after a layout shift under a still pointer (an element sliding under it), which can land a frame apart between takes, and a level of difference in a few pixels from rasterization; the timing of everything on the clock is exact
-- that the captures are git-excluded under their directory, the stage is still running, and `/sequence-isolate done` removes it
+Keep the handoff short: the user wants the files. The capture directory goes first, on its own line, then one line per file, then at most two lines, nothing else:
+
+```
+artifacts/captures/command-bar/
+
+command-bar-opening-dark.mp4 · 1920×1080 · 240 frames (4.0 s)
+command-bar-opening-light.mp4 · 1920×1080 · 240 frames (4.0 s)
+command-bar-palette.png · 1600×1600
+
+Opening, dark and light: the caret blink ignores the stage's speed (script Notes), so it runs at 1× in the 0.25× take.
+Next: /sequence-isolate done command-bar when you no longer need the stage.
+```
+
+- **Files** with their name, pixel size, and for a video the frame count and seconds.
+- **One line of problems**, only those that happened: a scene or action that couldn't be done and why, a time source the clock doesn't cover, an assumption or deviation from the script. Nothing went wrong, no line.
+- **Leave out** what the script already says or what holds for every take: the actions performed, the script's Notes, the recorder's known limits, that the captures are git-excluded. Mention a known limit only when this take hit it.
