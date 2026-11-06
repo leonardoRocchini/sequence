@@ -11,7 +11,7 @@
 - URL: /isolate/command-bar
 - Frame: 16:9 · 1280×720 CSS px
 - Theme: Dark
-- Background: Canvas
+- Background: Original
 - Scale: 1×
 - Pointer: Arrow
 
@@ -70,7 +70,7 @@
 
 ## Fields
 
-**Stage.** The values are the `/sequence-isolate` panel's own options ([CONTROLS.md](../../sequence-isolate/CONTROLS.md)): Frame, Theme, Background, Scale, Speed, Pointer. Frame is the panel option followed by `CSS px`: those px are the layout space the component is composed in, not the file's size, which is Output's Resolution. Background is a token option (`Canvas`) or `Custom` followed by a hex (`Custom #0E1116`). Pointer is `System`, `Hidden`, `Arrow`, or `Dot`. Only `Arrow` and `Dot` put a pointer in an automated capture, because they're drawn by the stage; the system pointer never appears in one. Never a raw viewport size, because the frame preset defines the composition and Output's Resolution defines the file size. A scene can override any of them (`Speed: 0.25×` and `Theme: Light` above).
+**Stage.** The values are the `/sequence-isolate` panel's own options ([CONTROLS.md](../../sequence-isolate/CONTROLS.md)): Frame, Theme, Background, Scale, Speed, Pointer. Frame is the panel option followed by `CSS px`: those px are the layout space the component is composed in, not the file's size, which is Output's Resolution. Background is `Original` (the token the component sits on in the app) or `Custom` followed by a hex (`Custom #0E1116`). Pointer is `System`, `Hidden`, `Arrow`, or `Dot`. Only `Arrow` and `Dot` put a pointer in an automated capture, because they're drawn by the stage; the system pointer never appears in one. Never a raw viewport size, because the frame preset defines the composition and Output's Resolution defines the file size. A scene can override any of them (`Speed: 0.25×` and `Theme: Light` above).
 
 **Content.** Optional. The text the stage's Content panel edits ([CONTROLS.md](../../sequence-isolate/CONTROLS.md), "Content"), as overrides of the fixture, one `###` block per picker scene, one line per fixture path, the text as a JSON string. Only paths the stage lists as editable. A picker scene with no block, or a script with no section, shoots the fixture's own text. The section replaces the stage's content store for the whole take: overrides left in the user's browser don't count, only what's written here.
 

@@ -1,6 +1,6 @@
 # The Stage
 
-The stage is what the component stands on: a full-viewport root, a capture frame of exact size, and a scale wrapper. Like the picker and the panel, it is **not a design decision**. Copy the markup verbatim and the CSS from `templates/stage.css`. The only things that change per run are, in the CSS copy, the stage root's z-index and the dev-overlay selectors, and, in the markup, the background token in `--stage-bg`. The stage uses no project fonts or colors beyond that background.
+The stage is what the component stands on: a full-viewport root, a capture frame of exact size, and a scale wrapper. Like the picker and the panel, it is **not a design decision**. Copy the markup verbatim and the CSS from `templates/stage.css`. The only things that change per run are, in the CSS copy, the stage root's z-index and the dev-overlay selectors, and, in the markup, the `Original` background token in `--stage-bg`. The stage uses no project fonts or colors beyond that background.
 
 ## Anatomy
 

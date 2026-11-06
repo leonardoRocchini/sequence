@@ -1,7 +1,7 @@
 {
   "name": "sequence",
   "description": "Capture a UI component in isolation: a throwaway stage, a capture script, and deterministic 60 fps screenshots, frame sequences and videos.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Leonardo Rocchini"
   },

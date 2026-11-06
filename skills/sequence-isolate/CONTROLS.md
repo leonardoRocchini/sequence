@@ -14,7 +14,7 @@ The panel holds these controls, and nothing else:
 | --- | --- | --- |
 | Theme | select | Light, Dark |
 | Frame | select | Auto, 16:9 · 1280×720, 4:3 · 1024×768, 1:1 · 800×800, 4:5 · 864×1080, 9:16 · 450×800 (STAGE.md) |
-| Background | select | the 2–3 tokens from Phase 2 recon, then Custom |
+| Background | select | Original (the token from Phase 2 recon), Custom (default Original) |
 | Custom color | color | the hex used when Background is Custom (plain panel: a text input for `#RRGGBB`) |
 | Scale | select | 1×, 1.5×, 2× |
 | Speed | select | 1×, 0.5×, 0.25× |
@@ -34,7 +34,7 @@ import "dialkit/styles.css";
 const stage = useDialKit("Stage", {
   theme: { type: "select", options: ["Light", "Dark"] },
   frame: { type: "select", options: [{ value: "auto", label: "Auto" }, { value: "16x9", label: "16:9 · 1280×720" }, { value: "4x3", label: "4:3 · 1024×768" }, { value: "1x1", label: "1:1 · 800×800" }, { value: "4x5", label: "4:5 · 864×1080" }, { value: "9x16", label: "9:16 · 450×800" }] },
-  background: { type: "select", options: ["Canvas", "Surface", "Custom"] },
+  background: { type: "select", options: ["Original", "Custom"] },
   backgroundColor: { type: "color", default: "#111111" },
   scale: { type: "select", options: ["1×", "1.5×", "2×"] },
   speed: { type: "select", options: ["1×", "0.5×", "0.25×"] },
@@ -56,7 +56,7 @@ const stage = useDialKit("Stage", {
 
 Wiring rules:
 
-- **Values go to the stage, never into the component.** Theme goes to the theme mechanism (STAGE.md). Frame, background, and scale go to `data-frame`, `--stage-bg`, and `--stage-scale` on the stage root, as CSS variables, not React state that re-renders the tree. Background `Custom` sets `--stage-bg` to the Custom color; a token sets it to the token's variable and ignores the color. Speed goes to `setSpeed()`. Pointer: `System` leaves the system pointer alone, `Hidden` sets `data-cursor="hidden"`, and `Arrow` or `Dot` calls `installPointer(root, "arrow" | "dot")` from STAGE.md (uninstalling the previous one first). Uninstall it when the option changes back or the stage unmounts. It's optional: a capture that doesn't need a pointer leaves it on `System`.
+- **Values go to the stage, never into the component.** Theme goes to the theme mechanism (STAGE.md). Frame, background, and scale go to `data-frame`, `--stage-bg`, and `--stage-scale` on the stage root, as CSS variables, not React state that re-renders the tree. Background `Custom` sets `--stage-bg` to the Custom color; `Original` sets it to the Phase 2 token's variable and ignores the color. Speed goes to `setSpeed()`. Pointer: `System` leaves the system pointer alone, `Hidden` sets `data-cursor="hidden"`, and `Arrow` or `Dot` calls `installPointer(root, "arrow" | "dot")` from STAGE.md (uninstalling the previous one first). Uninstall it when the option changes back or the stage unmounts. It's optional: a capture that doesn't need a pointer leaves it on `System`.
 - **Persist.** Turn on DialKit's `persist` option so a reload brings back the panel's values. The URL stays fixed.
 - **Top-right.** Place the panel top-right, clear of the picker's bottom-center pill. If the component occupies the top-right of the frame, use top-left.
 - **Clean mode removes it.** Render `<DialRoot>` (or mount the vanilla panel) only while chrome is visible. When `H` turns on clean mode, unmount it rather than hiding it with CSS: DialKit may portal outside any wrapper you'd target. Its values live in its store, so they survive the unmount.
@@ -83,7 +83,7 @@ Everything the panel holds, in one JSON file `/sequence-script` reads, so the in
   "stage": { "theme": "Dark", "frame": "16:9 · 1280×720", "background": "Custom", "backgroundColor": "#0E1116", "scale": "1×", "speed": "0.25×", "pointer": "Arrow" },
   "versions": [
     { "name": "V1", "stage": { "theme": "Dark", "frame": "16:9 · 1280×720", "background": "Custom", "backgroundColor": "#0E1116", "scale": "1×", "speed": "0.25×", "pointer": "Arrow" } },
-    { "name": "V2", "stage": { "theme": "Light", "frame": "1:1 · 800×800", "background": "Surface", "backgroundColor": "#111111", "scale": "2×", "speed": "1×", "pointer": "Arrow" } }
+    { "name": "V2", "stage": { "theme": "Light", "frame": "1:1 · 800×800", "background": "Original", "backgroundColor": "#111111", "scale": "2×", "speed": "1×", "pointer": "Arrow" } }
   ],
   "content": { "Default": { "items[0].title": "Q3 roadmap review" } }
 }
