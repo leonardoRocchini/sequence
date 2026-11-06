@@ -68,4 +68,13 @@ Show the plan compactly: purpose, scenes in order with their actions and capture
 
 Write `script.md` into the stage directory. The stage's exclude block already covers it, so it's never committed, and `done` deletes it with the stage. If the user wants to keep the script past `done`, write it where they say instead.
 
-Hand off with the path, one line per scene and its output, the Notes, and the next step: `/sequence-take <component>`.
+Keep the handoff short: the user just approved the plan, so don't repeat it. The script's path first, on its own line, then the files it will make, then the next step, nothing else:
+
+```
+src/app/isolate/command-bar/script.md
+
+3 files: 2 videos, 1 still
+Next: /sequence-take command-bar
+```
+
+Add one line between them only when the written script differs from the approved plan, or a Note changes what the take can do (an interaction that can't be automated).
