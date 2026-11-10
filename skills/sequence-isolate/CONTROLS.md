@@ -41,8 +41,8 @@ const stage = useDialKit("Stage", {
   replay: { type: "action" },
   copy: { type: "action", label: "Copy for script" }, // only without a server route
 }, {
-  id: "isolate:<component>",  // stable id: values survive the clean-mode unmount
-  persist: true,               // localStorage key `dialkit:isolate:<component>`
+  id: "isolate:<component>:<stamp>",  // the storage key (SKILL.md, Phase 4): values survive the clean-mode unmount, not a rebuilt stage
+  persist: true,                       // localStorage key `dialkit:isolate:<component>:<stamp>`
   onAction: (path) => {
     if (path === "replay") replay();
     if (path === "copy") copyState(currentState());
@@ -56,7 +56,7 @@ const stage = useDialKit("Stage", {
 Wiring rules:
 
 - **Values go to the stage, never into the component.** Theme goes to the theme mechanism (STAGE.md). Frame, background, and scale go to `data-frame`, `--stage-bg`, and `--stage-scale` on the stage root, as CSS variables, not React state that re-renders the tree. Background `Custom` sets `--stage-bg` to the Custom color; `Original` sets it to the Phase 2 token's variable and ignores the color. Speed goes to `setSpeed()`. Pointer: `System` leaves the system pointer alone, `Hidden` sets `data-cursor="hidden"`, and `Arrow` or `Dot` calls `installPointer(root, "arrow" | "dot")` from STAGE.md (uninstalling the previous one first). Uninstall it when the option changes back or the stage unmounts. It's optional: a capture that doesn't need a pointer leaves it on `System`.
-- **Persist.** Turn on DialKit's `persist` option so a reload brings back the panel's values. The URL stays fixed.
+- **Persist.** Turn on DialKit's `persist` option so a reload brings back the panel's values. The URL stays fixed. A plain panel persists the same values under the stage's storage key (SKILL.md, Phase 4).
 - **Top-right.** Place the panel top-right, clear of the picker's bottom-center pill. If the component occupies the top-right of the frame, use top-left.
 - **Clean mode removes it.** Render `<DialRoot>` (or mount the vanilla panel) only while chrome is visible. When `H` turns on clean mode, unmount it rather than hiding it with CSS: DialKit may portal outside any wrapper you'd target. Its values live in its store, so they survive the unmount.
 - **The dependency is part of the stage.** If the project doesn't already have DialKit, installing it changes the package manifest and the lockfile, which are tracked files. Record it in the exclude block as `# dependency: dialkit (<package dir>)` before installing, so `done` removes it with the package manager. Never use `git checkout` on those files: they may hold the user's own uncommitted changes. If DialKit's peer dependency (`motion`) isn't already in the project, record that too. If the project already had DialKit, record nothing and leave it. A DialKit that another stage installed isn't the project's: if another `# isolate:` block in the exclude file records it, record it in this block too, so the teardown of the other stage doesn't remove it from under this one (SKILL.md, Phase 6). Same for `motion`.
@@ -79,7 +79,7 @@ Everything the panel holds, in one JSON file `/sequence-script` reads, so the in
 
 - **Values are labels.** Every value is what the panel shows (`16:9 · 1280×720`, `0.25×`), so the script copies them as they are.
 - **Versions.** DialKit's versions are the base version plus the presets "Save version" adds. Names default to `V1` for the base and `V2`, `V3`, … for the presets, and the user can rename them. List the base first: `DialStore.getBaseName(id)`, with its values from the persisted panel (`baseValues` in the JSON at `DialStore.getPresetStorage(id)`) while a preset is active, and from the live values otherwise. DialStore has no getter for them, and leaving the base out loses a version: with `V2` loaded, `stage` holds V2's values and nothing holds V1's. Then each of `DialStore.getPresets(id)`. Map each one to the same shape as `stage` and leave out the actions. `stage` is whichever version is loaded, so a version equal to it is the active one, not a duplicate. A version holds the shooting settings only, not the scene. A plain panel has no versions, so it writes `[]`.
-- **When to save.** On every change of the panel's values, the versions (`DialStore.subscribe("isolate:<component>", …)` fires on save, load, and delete), and the scene. `saveState()` debounces and skips identical writes.
+- **When to save.** On every change of the panel's values, the versions (`DialStore.subscribe("isolate:<component>:<stamp>", …)` fires on save, load, and delete), and the scene. `saveState()` debounces and skips identical writes.
 - **No timestamp.** The file's modification time says how old it is. A `Date.now()` in the stage would break the determinism grep (SKILL.md, Phase 3).
 
 ### Where it goes

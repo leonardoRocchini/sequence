@@ -38,7 +38,7 @@ The styles are in the "Scene picker" section of [templates/stage.css](templates/
 
 - Clicking a tab or pressing `1–9`, `←`, or `→` switches scene. `R` and the ↻ button remount the current scene without switching.
 - Exactly one tab carries `data-active` and `aria-current="true"`, and the highlight slides to it.
-- The URL never changes. The current scene is saved to `localStorage` under `isolate:<component>:scene` (wrapped in try/catch, falling back to the first scene), so a reload brings it back. The highlight takes its initial position without animating (`data-ready` is set after first paint).
+- The URL never changes. The current scene is saved to `localStorage` under `isolate:<component>:<stamp>:scene` (the storage key, SKILL.md, Phase 4), wrapped in try/catch with a fallback to the first scene, so a reload brings it back. The highlight takes its initial position without animating (`data-ready` is set after first paint).
 - Switching remounts the component (a new key), so entrance animations run again.
 
 ## Reference wiring
@@ -47,7 +47,7 @@ Use this verbatim for a plain-HTML stage (host 3 in SKILL.md, Phase 4, or a host
 
 ```js
 // `scenes` is an array of render functions, one per scene, in picker order.
-const SCENE_KEY = 'isolate:<component>:scene';
+const SCENE_KEY = 'isolate:<component>:<stamp>:scene';
 const frame = document.querySelector('.stage-scale');
 const picker = document.querySelector('.stage-picker'); // null with a single scene
 const highlight = picker?.querySelector('.stage-picker-highlight');
