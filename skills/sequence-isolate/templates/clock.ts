@@ -1,23 +1,31 @@
 // Speed clock: slows the component's time without touching its code.
-const real = {
-  now: performance.now.bind(performance),
-  raf: window.requestAnimationFrame.bind(window),
-  caf: window.cancelAnimationFrame.bind(window),
-  setTimeout: window.setTimeout.bind(window),
-  setInterval: window.setInterval.bind(window),
+// Nothing touches `window` at module load: Next.js evaluates the module on the server too.
+const now = performance.now.bind(performance);
+let real: {
+  raf: typeof requestAnimationFrame;
+  caf: typeof cancelAnimationFrame;
+  setTimeout: typeof setTimeout;
+  setInterval: typeof setInterval;
 };
 let speed = 1;
-let realBase = real.now();
+let realBase = now();
 let virtualBase = realBase;
-const virtualNow = () => virtualBase + (real.now() - realBase) * speed;
+const virtualNow = () => virtualBase + (now() - realBase) * speed;
 
 export function setSpeed(next: number) {
   virtualBase = virtualNow(); // rebase, so time never jumps
-  realBase = real.now();
+  realBase = now();
   speed = next;
 }
 
 export function installClock() {
+  // Saved on the first install only, so a second install never saves the scaled ones.
+  real ??= {
+    raf: window.requestAnimationFrame.bind(window),
+    caf: window.cancelAnimationFrame.bind(window),
+    setTimeout: window.setTimeout.bind(window),
+    setInterval: window.setInterval.bind(window),
+  };
   performance.now = virtualNow;
   window.requestAnimationFrame = (cb) => real.raf(() => cb(virtualNow()));
   // @ts-expect-error -- the stage swaps the timer globals for scaled ones
