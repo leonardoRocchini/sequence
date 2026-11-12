@@ -28,10 +28,12 @@ export function installClock() {
   };
   performance.now = virtualNow;
   window.requestAnimationFrame = (cb) => real.raf(() => cb(virtualNow()));
-  // @ts-expect-error -- the stage swaps the timer globals for scaled ones
-  window.setTimeout = (fn: TimerHandler, ms = 0, ...args: unknown[]) => real.setTimeout(fn, ms / speed, ...args);
-  // @ts-expect-error -- the stage swaps the timer globals for scaled ones
-  window.setInterval = (fn: TimerHandler, ms = 0, ...args: unknown[]) => real.setInterval(fn, ms / speed, ...args);
+  // Object.assign, not assignment: with @types/node the scaled timers don't match
+  // the globals' type, without it they do, and a stage must typecheck either way.
+  Object.assign(window, {
+    setTimeout: (fn: TimerHandler, ms = 0, ...args: unknown[]) => real.setTimeout(fn, ms / speed, ...args),
+    setInterval: (fn: TimerHandler, ms = 0, ...args: unknown[]) => real.setInterval(fn, ms / speed, ...args),
+  });
 
   let frame = real.raf(function sync() {
     for (const anim of document.getAnimations()) {
