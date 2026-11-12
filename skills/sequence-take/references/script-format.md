@@ -92,7 +92,7 @@ Video format is the filename's extension. Each one stands for one encoding, so t
 | `Picker scene` | A tab that exists on the stage's picker. Scenes are tabs, never URL params. |
 | `Reset to` | How to get a clean starting point: `replay (R)`, or real interactions. Never by changing component state. |
 | `Action` | Real interactions: click, hover, focus, keys, typing, scroll, drag. Several are allowed, in order. |
-| `Wait for` | An observable condition: an element visible, a label changed, an animation finished. A fixed delay only when the scene captures at timed offsets. |
+| `Wait for` | An observable condition: an element visible, a label changed, an animation finished. A fixed delay only when the scene captures at timed offsets. Write what the viewer sees, not code: the take chooses the check, and a check written for a live page can't come true on its stopped clock (`document.getAnimations()` is never empty there; "animation finished" is the recorder's `busy()`). |
 | `Hold` | Optional, for video: how long the shot stays on the end state after `Wait for` is met, in page time. Default 0: the video ends on the frame the condition becomes true. |
 | `Capture` | `screenshot`, `frames at <offsets>`, or `video`, then the filename. `{ms}` in a filename is replaced by the offset. |
 
