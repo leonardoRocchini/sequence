@@ -85,7 +85,7 @@ Video format is the filename's extension. Each one stands for one encoding, so t
 
 `.mp4` needs even pixel sizes, so its Resolution can't have an odd side.
 
-**Scene.** One block per capture, in shooting order.
+**Scene.** One block per shot, in shooting order. A shot is one capture, except in a joined video (see "Joined scenes").
 
 | Field | Meaning |
 | --- | --- |
@@ -95,9 +95,33 @@ Video format is the filename's extension. Each one stands for one encoding, so t
 | `Wait for` | An observable condition: an element visible, a label changed, an animation finished. A fixed delay only when the scene captures at timed offsets. Write what the viewer sees, not code: the take chooses the check, and a check written for a live page can't come true on its stopped clock (`document.getAnimations()` is never empty there; "animation finished" is the recorder's `busy()`). |
 | `Hold` | Optional, for video: how long the shot stays on the end state after `Wait for` is met, in page time. Default 0: the video ends on the frame the condition becomes true. |
 | `Capture` | `screenshot`, `frames at <offsets>`, or `video`, then the filename. `{ms}` in a filename is replaced by the offset. |
+| `Join` | Optional, for video: the shot continues the previous scene's video instead of starting its own file. `cut`, or `crossfade` and a duration (`crossfade 400 ms`). |
 
 A **scene** is a starting state plus what's shot from it. Hover, open, and typing are actions inside a scene, not scenes of their own, and a stage scene can be used by several script scenes.
 
 A **variant** is the same shot with one setting changed: the theme, a resolution, a text. Or with several, when it comes from a version saved in the stage's panel: the scene writes every setting the version changes, and its suffix is the name the user gave the version. Each variant is a scene of its own, with the override written out and the value as a suffix of both the scene's name and the filename (`Opening, light`, `command-bar-opening-light.mp4`). The scene that keeps the Stage value gets the suffix too, so every variant's file says which one it is. Never a shorthand that expands into several scenes: `/sequence-take` shoots the blocks as written.
+
+**Joined scenes.** Several shots in one video: a tour of two picker scenes, or the same interaction in both themes, without a hard cut between them. Each shot is still a scene of its own, with its picker scene, reset, actions and wait. Every scene after the first has `Join`, and all of them are consecutive and name the same file, so they share its Resolution and extension.
+
+```md
+## Scene: Tour, empty
+- Picker scene: Empty
+- Reset to: replay (R)
+- Action: click "New item"
+- Wait for: the new row is visible
+- Hold: 600 ms
+- Capture: video, list-tour.mp4
+
+## Scene: Tour, many items
+- Picker scene: Many items
+- Reset to: replay (R)
+- Action: hover the third row
+- Wait for: the row's actions are visible
+- Hold: 1 s
+- Join: crossfade 400 ms
+- Capture: video, list-tour.mp4
+```
+
+`cut` starts the shot on the frame after the previous one ends. `crossfade` dissolves one into the other over the duration, and the video is that much shorter than the shots end to end. The incoming shot starts that long before its first action, on its still starting state, and the fade covers the last frames of the outgoing one. So the outgoing scene's `Hold` is at least the duration, or its last motion fades out under the dissolve. A crossfade is an edit, not the component's motion. When a real interaction leads from one state to the next, that's one scene with several actions, not a join. A variant of a joined video is a variant of every scene in it.
 
 **Notes.** Anything inferred rather than said by the user, and every known limitation. `/sequence-take` repeats them in its handoff.

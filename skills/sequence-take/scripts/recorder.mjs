@@ -28,6 +28,9 @@
  *   await take.stop();
  *   await take.encode({ output: 'artifacts/captures/x/opening.mp4', size: { width: 2560, height: 1440 } });
  *
+ * join() encodes several stopped takes as one video, with a cut or a crossfade
+ * between them.
+ *
  * Limits: only the clocks above are virtual. An animation that starts between
  * two frames is timed from the frame that first sees it (up to one frame
  * early); loops restart at the take's first frame; MessageChannel work runs as
@@ -277,12 +280,7 @@ export class Take {
 
   async #prepare(output, size) {
     if (this.state !== 'done') throw new Error('Call stop() first');
-    if (await readFile(output).then(() => true, () => false)) throw new Error(`${output} exists: pick another name`);
-    await mkdir(path.dirname(path.resolve(output)), { recursive: true });
-    const { width, height } = this.report.framePx;
-    const out = size ?? { width, height };
-    if (out.width > width + 1 || out.height > height + 1) throw new Error(`Would upscale ${width}×${height} to ${out.width}×${out.height}`);
-    return out;
+    return prepare(output, size, [this.report.framePx]);
   }
 
   async encode({ output, from = 0, to, size, ffmpeg = 'ffmpeg' }) {
@@ -296,30 +294,92 @@ export class Take {
     const files = [];
     for (let k = 0; first + Math.round((k * this.fps) / rate) <= last; k++) files.push(this.frames[first + Math.round((k * this.fps) / rate)]);
     const filters = [`scale=${out.width}:${out.height}:flags=lanczos${format.yuv ? ':out_color_matrix=bt709:out_range=tv' : ''}`];
-    if (ext === '.gif') filters.push('split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a');
-    await this.#ffmpeg(ffmpeg, ['-f', 'image2pipe', '-framerate', String(rate), '-c:v', 'png', '-i', '-', '-vf', filters.join(','), '-an', ...format.args, path.resolve(output)], files);
+    if (ext === '.gif') filters.push(GIF_PALETTE);
+    await runFfmpeg(ffmpeg, ['-f', 'image2pipe', '-framerate', String(rate), '-c:v', 'png', '-i', '-', '-vf', filters.join(','), '-an', ...format.args, path.resolve(output)], files.map((file) => path.join(this.dir, file)));
     return { output: path.resolve(output), ...out, frames: files.length, seconds: Number((files.length / rate).toFixed(3)), fps: rate };
   }
 
   async still({ output, at, size, ffmpeg = 'ffmpeg' }) {
     const out = await this.#prepare(output, size);
     const index = Math.round(at / this.interval);
-    await this.#ffmpeg(ffmpeg, ['-f', 'image2pipe', '-c:v', 'png', '-i', '-', '-vf', `scale=${out.width}:${out.height}:flags=lanczos`, '-frames:v', '1', path.resolve(output)], [this.frames[index]]);
+    await runFfmpeg(ffmpeg, ['-f', 'image2pipe', '-c:v', 'png', '-i', '-', '-vf', `scale=${out.width}:${out.height}:flags=lanczos`, '-frames:v', '1', path.resolve(output)], [path.join(this.dir, this.frames[index])]);
     return { output: path.resolve(output), ...out, at: index * this.interval };
   }
+}
 
-  async #ffmpeg(ffmpeg, args, files) {
-    await new Promise((resolve, reject) => {
-      const child = spawn(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-n', ...args], { stdio: ['pipe', 'inherit', 'inherit'] });
-      child.on('error', reject);
-      child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`ffmpeg exited with code ${code}`))));
-      child.stdin.on('error', () => {});
-      (async () => {
-        for (const file of files) {
-          if (!child.stdin.write(await readFile(path.join(this.dir, file)))) await new Promise((done) => child.stdin.once('drain', done));
-        }
-        child.stdin.end();
-      })().catch(reject);
-    });
+/**
+ * Encodes several stopped takes as one video, in order. Each part is a take trimmed
+ * to its `from` (and `to`), as in encode(). A part with `crossfade` (ms) dissolves
+ * in over the previous part's last frames; without it, it follows with a cut.
+ *
+ *   await join({ output, size, parts: [{ take: a, from: fromA }, { take: b, from: fromB - 400, crossfade: 400 }] });
+ */
+export async function join({ output, parts, size, ffmpeg = 'ffmpeg' }) {
+  const ext = path.extname(output).toLowerCase();
+  const format = FORMATS[ext];
+  if (!format) throw new Error(`No encoding for ${ext}`);
+  if (parts.some((part) => part.take.state !== 'done')) throw new Error('Call stop() on every take first');
+  const fps = parts[0].take.fps;
+  if (parts.some((part) => part.take.fps !== fps)) throw new Error('The takes have different frame rates');
+  const out = await prepare(output, size, parts.map((part) => part.take.report.framePx));
+  const interval = 1000 / fps;
+  const inputs = [];
+  const graph = [];
+  let joined = '';
+  let length = 0; // frames joined so far
+  parts.forEach((part, i) => {
+    const first = Math.round((part.from ?? 0) / interval);
+    const last = part.to === undefined ? part.take.frames.length - 1 : Math.round(part.to / interval);
+    const count = last - first + 1;
+    inputs.push('-framerate', String(fps), '-start_number', String(first), '-i', path.join(part.take.dir, 'frames', '%07d.png'));
+    graph.push(`[${i}:v]trim=end_frame=${count},setpts=PTS-STARTPTS,scale=${out.width}:${out.height}:flags=lanczos,setsar=1[p${i}]`);
+    if (i === 0) {
+      joined = 'p0';
+      length = count;
+      return;
+    }
+    const fade = Math.round((part.crossfade ?? 0) / interval);
+    if (fade > Math.min(length, count)) throw new Error(`A ${part.crossfade} ms crossfade is longer than a part it joins`);
+    graph.push(fade
+      ? `[${joined}][p${i}]xfade=transition=fade:duration=${fade / fps}:offset=${(length - fade) / fps}[j${i}]`
+      : `[${joined}][p${i}]concat=n=2:v=1:a=0[j${i}]`);
+    joined = `j${i}`;
+    length += count - fade;
+  });
+  const rate = Math.min(fps, format.maxFps ?? fps);
+  const tail = [];
+  if (rate !== fps) tail.push(`fps=${rate}`);
+  if (format.yuv) tail.push('scale=out_color_matrix=bt709:out_range=tv');
+  if (ext === '.gif') tail.push(GIF_PALETTE);
+  graph.push(`[${joined}]${tail.length ? tail.join(',') : 'null'}`);
+  await runFfmpeg(ffmpeg, [...inputs, '-filter_complex', graph.join(';'), '-an', ...format.args, path.resolve(output)], []);
+  const frames = Math.round((length * rate) / fps);
+  return { output: path.resolve(output), ...out, frames, seconds: Number((frames / rate).toFixed(3)), fps: rate };
+}
+
+const GIF_PALETTE = 'split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a';
+
+async function prepare(output, size, framePxs) {
+  if (await readFile(output).then(() => true, () => false)) throw new Error(`${output} exists: pick another name`);
+  await mkdir(path.dirname(path.resolve(output)), { recursive: true });
+  const out = size ?? framePxs[0];
+  for (const { width, height } of framePxs) {
+    if (out.width > width + 1 || out.height > height + 1) throw new Error(`Would upscale ${width}×${height} to ${out.width}×${out.height}`);
   }
+  return { width: out.width, height: out.height };
+}
+
+async function runFfmpeg(ffmpeg, args, files) {
+  await new Promise((resolve, reject) => {
+    const child = spawn(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-n', ...args], { stdio: ['pipe', 'inherit', 'inherit'] });
+    child.on('error', reject);
+    child.on('exit', (code) => (code === 0 ? resolve() : reject(new Error(`ffmpeg exited with code ${code}`))));
+    child.stdin.on('error', () => {});
+    (async () => {
+      for (const file of files) {
+        if (!child.stdin.write(await readFile(file))) await new Promise((done) => child.stdin.once('drain', done));
+      }
+      child.stdin.end();
+    })().catch(reject);
+  });
 }
