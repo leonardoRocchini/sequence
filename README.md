@@ -4,15 +4,17 @@
 
 Agent skills that capture a UI component in isolation, as screenshots, frame sequences and videos, for portfolios, social posts and documentation.
 
+![The isolate, script and take steps, recorded with sequence](.github/demo.gif)
+
 The component renders alone in a fixed-size frame, with real fonts and tokens and curated content, and every frame of a video is rendered on a stopped clock: true 60 fps at any resolution, on any machine. Nothing is added to your production code, and nothing the skills create can be committed.
 
 ## Skills
 
 Three steps, each one a slash command:
 
-- [**sequence-isolate**](skills/sequence-isolate/SKILL.md): Builds a throwaway, dev-only page that mounts one component in a fixed frame, with **fixture scenes**, a **scene picker** and a **control panel** for theme, frame, background, scale, speed, pointer and scene text. `H` hides everything but the component. `done` deletes the page.
-- [**sequence-script**](skills/sequence-script/SKILL.md): Interviews you one question at a time and writes the capture's `script.md`: which scenes, which interactions, **screenshot, frames or video**, variants, resolution and format. It starts from the settings you left in the stage's panel.
-- [**sequence-take**](skills/sequence-take/SKILL.md): Runs `script.md` in Chromium with Playwright and saves the files, **cropped to the frame**, to `artifacts/captures/<component>/`. Videos come out as `.mp4`, `.webm`, `.mov` or `.gif`.
+- [**sequence-isolate**](skills/sequence-isolate/SKILL.md): Builds a throwaway, dev-only page that mounts one component in a fixed frame, with **fixture scenes**, a **scene picker** and a **control panel** for theme, frame, background, scale, speed and pointer. `H` hides everything but the component. `done` deletes the page.
+- [**sequence-script**](skills/sequence-script/SKILL.md): Interviews you one question at a time and writes the capture's `script.md`: which scenes, which interactions, **screenshot, frames or video**, variants, resolution and format, and whether several scenes become **one video, joined with a cut or a crossfade**. It starts from the settings you left in the stage's panel.
+- [**sequence-take**](skills/sequence-take/SKILL.md): Runs `script.md` in Chromium with Playwright and saves the files, **cropped to the frame**, to `artifacts/captures/<component>/`. Videos come out as `.mp4`, `.webm`, `.mov` or `.gif`, one per scene or several scenes joined in one file.
 
 ```text
 /sequence-isolate command-bar
