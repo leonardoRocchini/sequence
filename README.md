@@ -40,12 +40,15 @@ As a plugin, the commands are namespaced: `/sequence:sequence-isolate`, and so o
 
 ## Requirements
 
-- **A project the stage can live in**: an app with a router (Next.js, React Router, TanStack Router, SvelteKit, Nuxt), a Vite dev server, or a static site. You run the dev server; the skills never start one.
-- **Node.js**, for Playwright. `sequence-take` uses the project's Playwright if it has one, otherwise installs `playwright-core` in a scratch directory, never in the project.
-- **Chromium** from Playwright's browser cache. If there's none, `sequence-take` asks to run `npx playwright install chromium`.
-- **ffmpeg**, to encode every capture. If it isn't on the `PATH`, `sequence-take` asks to install `ffmpeg-static` in its scratch directory.
+- **A git repository** with a project the stage can live in: an app with file-based routes (Next.js, TanStack Router, React Router, SvelteKit, Nuxt), a Vite dev server, or a static site. You run the dev server; the skills never start one.
+- **Node.js**, for Playwright and the recorder.
+- **Chromium**: the one in Playwright's browser cache, or Google Chrome if it's installed. With neither, `sequence-take` asks to run `npx playwright install chromium`, the only install that stays behind.
+- **`lsof`**, to find the dev server by folder. macOS has it; on Linux, install it.
+- **Python 3**, for a static site only: its stage is served with `python3 -m http.server`.
 
-Tested on macOS with Next.js. Linux should work; Windows is untested.
+Everything else is installed when needed and removed afterwards, without asking: `playwright-core` and, without ffmpeg on the `PATH`, `ffmpeg-static` go in a scratch directory, never in the project. In a React project the stage adds DialKit and `motion` to it, and `done` removes them.
+
+Tested on macOS with Next.js, Vite, TanStack Router, React Router in a pnpm monorepo, SvelteKit with yarn, bun and a static site. Linux should work; Windows is untested.
 
 ## License
 
