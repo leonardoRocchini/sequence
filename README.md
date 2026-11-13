@@ -1,3 +1,5 @@
+<img src=".github/icon.svg" width="48" height="48" alt="">
+
 # sequence
 
 [![skills.sh](https://skills.sh/b/leonardoRocchini/sequence)](https://skills.sh/leonardoRocchini/sequence)
