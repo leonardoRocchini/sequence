@@ -77,7 +77,7 @@ Never move or edit the app's layout files to make room for the stage.
 
 ## Theme
 
-Apply the project's dark mechanism to `.stage-root` when its selectors match any element (a `.dark { … }` block or a `&:is(.dark *)` variant). If they're anchored to `html` or `:root`, toggle it on `document.documentElement` instead, and restore the original value when the stage unmounts. Portals render outside the stage root, so if the component portals, the theme has to go on `html`.
+Apply the project's dark mechanism to `.stage-root` when its selectors match any element (a `.dark { … }` block or a `&:is(.dark *)` variant). If they're anchored to `html` or `:root`, toggle it on `document.documentElement` instead, and restore the original value when the stage unmounts. Portals render outside the stage root, so if the component portals, the theme has to go on `html`. A project with a single theme has nothing to toggle: leave this out, with the panel's Theme control (CONTROLS.md).
 
 ## Behavior contract
 

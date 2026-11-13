@@ -3,7 +3,7 @@
 
 // Panel values as the panel shows them: option labels ("16:9 · 1280×720", "0.25×"), hex for the color.
 export type StageValues = {
-  theme: string;
+  theme?: string; // absent when the project has a single theme
   frame: string;
   background: string;
   backgroundColor: string;

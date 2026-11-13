@@ -12,7 +12,7 @@ The panel holds these controls, and nothing else:
 
 | Control | DialKit type | Options |
 | --- | --- | --- |
-| Theme | select | Light, Dark |
+| Theme | select | the project's themes from Phase 1 recon, usually Light, Dark. Left out with a single theme |
 | Frame | select | Auto, 16:9 · 1280×720, 4:3 · 1024×768, 1:1 · 800×800, 4:5 · 864×1080, 9:16 · 450×800 (STAGE.md) |
 | Background | select | Original (the token from Phase 2 recon), Custom (default Original) |
 | Custom color | color | the hex used when Background is Custom (plain panel: a text input for `#RRGGBB`) |
@@ -24,6 +24,8 @@ The panel holds these controls, and nothing else:
 
 Put the frame size in the option label, so the panel shows the px to set in the capture tool.
 
+Theme is there only when the project has two or more themes. With one, a select would offer a single option that sets nothing, so the stage has no Theme control, the stage state has no `theme`, and the script no Theme line.
+
 React shape, from `dialkit` 2.x (the vanilla `createDialKit()` takes the same config). Select options are plain strings or `{ value, label }`, and each value is read as `stage.<key>`:
 
 ```jsx
@@ -31,7 +33,7 @@ import { DialRoot, useDialKit } from "dialkit";
 import "dialkit/styles.css";
 
 const stage = useDialKit("Stage", {
-  theme: { type: "select", options: ["Light", "Dark"] },
+  theme: { type: "select", options: ["Light", "Dark"] },  // only with two or more themes
   frame: { type: "select", options: [{ value: "auto", label: "Auto" }, { value: "16x9", label: "16:9 · 1280×720" }, { value: "4x3", label: "4:3 · 1024×768" }, { value: "1x1", label: "1:1 · 800×800" }, { value: "4x5", label: "4:5 · 864×1080" }, { value: "9x16", label: "9:16 · 450×800" }] },
   background: { type: "select", options: ["Original", "Custom"] },
   backgroundColor: { type: "color", default: "#111111" },
@@ -77,6 +79,7 @@ Everything the panel holds, in one JSON file `/sequence-script` reads, so the in
 }
 ```
 
+- **No theme, no key.** A stage without the Theme control leaves `theme` out of `stage` and of every version.
 - **Values are labels.** Every value is what the panel shows (`16:9 · 1280×720`, `0.25×`), so the script copies them as they are.
 - **Versions.** DialKit's versions are the base version plus the presets "Save version" adds. Names default to `V1` for the base and `V2`, `V3`, … for the presets, and the user can rename them. List the base first: `DialStore.getBaseName(id)`, with its values from the persisted panel (`baseValues` in the JSON at `DialStore.getPresetStorage(id)`) while a preset is active, and from the live values otherwise. DialStore has no getter for them, and leaving the base out loses a version: with `V2` loaded, `stage` holds V2's values and nothing holds V1's. Then each of `DialStore.getPresets(id)`. Map each one to the same shape as `stage` and leave out the actions. `stage` is whichever version is loaded, so a version equal to it is the active one, not a duplicate. A version holds the shooting settings only, not the scene. A plain panel has no versions, so it writes `[]`.
 - **When to save.** On every change of the panel's values, the versions (`DialStore.subscribe("isolate:<component>:<stamp>", …)` fires on save, load, and delete), and the scene. `saveState()` debounces and skips identical writes.
