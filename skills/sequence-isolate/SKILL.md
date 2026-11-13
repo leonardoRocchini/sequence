@@ -97,13 +97,15 @@ http://localhost:3000/isolate/command-bar
 
 Scenes: 1 Default (press ⌘K to open), 2 Empty
 Keys: H hide panel · R replay · 1–9 scenes
+Added: dialkit, motion (apps/web) · done removes them
 Not checked in a browser.
 Next: /sequence-script command-bar, then /sequence-take command-bar, done when finished.
 ```
 
 - **Scenes** on one line, with a note in parentheses only where the scene needs something done live.
+- **One line of added dependencies**, only when the stage installed any: the packages and the package directory, since they change the manifest and the lockfile until `done`.
 - **One line of warnings**, only those that apply: the stage hasn't been checked (always), a scene that couldn't be built as asked, a scene that renders a snapshot of the source (Phase 2), a shell that fetches data (STAGE.md).
-- **Leave out** what the stage shows or the next skill handles: frame sizes, the panel's controls, how the state reaches `/sequence-script`, that the stage is git-excluded, the dependencies it installed (`done` removes them).
+- **Leave out** what the stage shows or the next skill handles: frame sizes, the panel's controls, how the state reaches `/sequence-script`, that the stage is git-excluded.
 
 **Completion criterion:** the handoff opens with the URL with the running server's port, and lists every scene and the keys.
 

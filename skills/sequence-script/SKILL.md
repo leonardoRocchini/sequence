@@ -25,7 +25,7 @@ Find the stage from the `# isolate:<component>:begin` block in the exclude file 
 
 - **The stage.** The picker's scenes, the panel's options, and the keys ([CONTROLS.md](../sequence-isolate/CONTROLS.md)).
 - **The component** (or the stage's snapshot of it). Interactive elements and their handlers, CSS transitions and animations, motion libraries, and their durations. Motion that may escape the speed multiplier (CONTROLS.md, "What can escape it") goes in Notes as Inferred, so `/sequence-take` reports it: nothing else records it.
-- **The tooling.** `/sequence-take` makes every capture (screenshot, frames, video) with its `recorder.mjs`, which needs `ffmpeg`. If it isn't on the `PATH`, `/sequence-take` installs `ffmpeg-static` in its scratchpad on its own: it doesn't concern the interview, so don't mention it.
+- **The tooling.** `/sequence-take` makes every capture (screenshot, frames, video) with its `recorder.mjs`, which needs `ffmpeg`. If it isn't on the `PATH`, `/sequence-take` installs `ffmpeg-static` in its scratchpad and reports it in its handoff, so the interview has no question about it.
 - **An existing `script.md`.** If there is one, the interview edits it instead of starting over.
 - **The stage's state.** `stage-state.json` in the stage directory: the panel's settings, its saved versions, and the current scene, saved by the stage on every change ([CONTROLS.md](../sequence-isolate/CONTROLS.md), "Stage state"). Note its modification time. A stage on a host with no server route has a "Copy for script" action instead and no file: then the state is the JSON the user pasted with the command or in the conversation, if any. A stage older than this contract has neither.
 
